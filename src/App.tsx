@@ -6,6 +6,8 @@ import { CustomerOrders } from './screens/CustomerOrders';
 import { CustomerList } from './screens/CustomerList';
 import { OrderReport } from './screens/OrderReport';
 import { UpdateCredit } from './screens/UpdateCredit';
+import { ROI } from './screens/ROI';
+import { Mapping } from './screens/Mapping';
 
 function readHash(): string {
   const h = window.location.hash.replace(/^#\/?/, '').trim();
@@ -33,6 +35,8 @@ export default function App() {
       case 'customer-list': return <CustomerList />;
       case 'order-report': return <OrderReport />;
       case 'update-credit': return <UpdateCredit />;
+      case 'roi': return <ROI />;
+      case 'mapping': return <Mapping />;
       case 'home':
       default:
         return <Home onNavigate={navigate} />;

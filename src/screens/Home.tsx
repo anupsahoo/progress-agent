@@ -105,6 +105,14 @@ export function Home({ onNavigate }: HomeProps) {
                 cursor: 'pointer', boxShadow: '0 4px 14px rgba(0,0,0,0.15)',
               }}
             >Start with Customer Maintenance →</button>
+            <button
+              onClick={() => onNavigate('roi')}
+              style={{
+                padding: '11px 22px', borderRadius: 8, fontSize: 14, fontWeight: 700,
+                background: 'rgba(255,255,255,0.18)', color: 'white',
+                border: '1.5px solid rgba(255,255,255,0.4)', cursor: 'pointer',
+              }}
+            >See ROI Calculator →</button>
             <a
               href="https://github.com/anupsahoo/progress-agent"
               target="_blank"

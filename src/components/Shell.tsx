@@ -27,11 +27,13 @@ interface ShellProps {
 
 const NAV = [
   { id: 'home', label: 'Home' },
-  { id: 'customer-maint', label: 'Customer Maintenance' },
-  { id: 'customer-orders', label: 'Customer Orders' },
+  { id: 'customer-maint', label: 'Customer Maint' },
+  { id: 'customer-orders', label: 'Orders' },
   { id: 'customer-list', label: 'Customer List' },
   { id: 'order-report', label: 'Order Report' },
   { id: 'update-credit', label: 'Credit Update' },
+  { id: 'roi', label: 'ROI' },
+  { id: 'mapping', label: 'ABL → Modern' },
 ];
 
 export function Shell({ children, onNavigate, currentRoute }: ShellProps) {
