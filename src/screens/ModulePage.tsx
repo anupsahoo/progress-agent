@@ -30,7 +30,7 @@ export function StatusBadge({ status, pr, size = 'md' }: { status: 'legacy' | 'm
       </a>
     );
   }
-  return <span className={`sbadge legacy ${size}`}><Hourglass size={short ? 13 : 15} /> {short ? 'Legacy · awaiting' : 'Legacy · awaiting modernization'}</span>;
+  return <span className={`sbadge legacy ${size}`}><Hourglass size={short ? 13 : 15} /> {short ? 'Legacy' : 'Legacy · awaiting modernization'}</span>;
 }
 
 /* ---------------- legacy terminal for an estate screen ---------------- */
