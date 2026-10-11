@@ -1,0 +1,18 @@
+# sec-088-po-line-a07-auth: POLine: A07 Missing authentication
+id: sec-088-po-line-a07-auth
+title: "POLine: A07 Missing authentication"
+module: purchasing
+table: POLine
+owasp: "A07:2021 Identification and Authentication Failures"
+cwe: CWE-306
+severity: medium
+target:
+  method: GET
+  path: "/api/purchasing/po-lines"
+payloads:
+  - "no Authorization header"
+  - "expired token"
+  - "token signed with another key"
+expected: "401 for every payload"
+legacy_reference: legacy/purchasing/si_po_line.p
+automated_by: zap-baseline + custom request runner

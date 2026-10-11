@@ -1,0 +1,16 @@
+# sec-072-benefits-a05-headers: Benefits: A05 Security misconfiguration
+id: sec-072-benefits-a05-headers
+title: "Benefits: A05 Security misconfiguration"
+module: hr-payroll
+table: Benefits
+owasp: "A05:2021 Security Misconfiguration"
+cwe: CWE-16
+severity: medium
+target:
+  method: GET
+  path: "/api/hr-payroll/benefitses"
+payloads:
+  []
+expected: "X-Content-Type-Options nosniff, no Server version banner, CORS limited to the app origin"
+legacy_reference: legacy/hr-payroll/si_benefits.p
+automated_by: zap-baseline + custom request runner

@@ -1,0 +1,16 @@
+# sec-065-order-line-a05-headers: OrderLine: A05 Security misconfiguration
+id: sec-065-order-line-a05-headers
+title: "OrderLine: A05 Security misconfiguration"
+module: order-entry
+table: OrderLine
+owasp: "A05:2021 Security Misconfiguration"
+cwe: CWE-16
+severity: medium
+target:
+  method: GET
+  path: "/api/order-entry/order-lines"
+payloads:
+  []
+expected: "X-Content-Type-Options nosniff, no Server version banner, CORS limited to the app origin"
+legacy_reference: legacy/order-entry/si_order_line.p
+automated_by: zap-baseline + custom request runner

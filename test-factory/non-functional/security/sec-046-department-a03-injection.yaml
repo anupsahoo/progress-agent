@@ -1,0 +1,19 @@
+# sec-046-department-a03-injection: Department: A03 Injection in search
+id: sec-046-department-a03-injection
+title: "Department: A03 Injection in search"
+module: hr-payroll
+table: Department
+owasp: "A03:2021 Injection"
+cwe: CWE-89
+severity: high
+target:
+  method: GET
+  path: "/api/hr-payroll/departments?q="
+payloads:
+  - "' OR '1'='1"
+  - "\"; DROP TABLE Department; --"
+  - "${jndi:ldap://x}"
+  - "<script>alert(1)</script>"
+expected: "200 with an empty or filtered page; DeptCode search is parameterised; no stack trace"
+legacy_reference: legacy/hr-payroll/si_department.p
+automated_by: zap-baseline + custom request runner

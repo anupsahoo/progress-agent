@@ -1,0 +1,18 @@
+# sec-076-customer-a07-auth: Customer: A07 Missing authentication
+id: sec-076-customer-a07-auth
+title: "Customer: A07 Missing authentication"
+module: customer-management
+table: Customer
+owasp: "A07:2021 Identification and Authentication Failures"
+cwe: CWE-306
+severity: medium
+target:
+  method: GET
+  path: "/api/customer-management/customers"
+payloads:
+  - "no Authorization header"
+  - "expired token"
+  - "token signed with another key"
+expected: "401 for every payload"
+legacy_reference: legacy/customer-management/si_customer.p
+automated_by: zap-baseline + custom request runner
