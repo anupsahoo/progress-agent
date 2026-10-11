@@ -41,7 +41,7 @@ h1, h2, h3, h4 { margin: 0; letter-spacing: -0.015em; }
 .cs-logo svg { flex: none; }
 .cs-word { color: var(--color-wordmark); font-weight: 400; letter-spacing: -0.02em; line-height: 1; }
 .cs-word b { font-weight: 700; }
-.cs-tag { color: var(--color-accent); font-weight: 700; font-size: 13.5px; letter-spacing: .01em; margin-top: 2px; }
+.cs-tag { color: var(--color-accent); font-weight: 700; font-size: 11.5px; letter-spacing: .01em; margin-top: 2px; }
 .cs-line { color: #2B3D5C; font-size: 12px; line-height: 1.45; }
 .app-name { flex: none; display: flex; align-items: center; gap: 11px; padding: 14px 8px 4px; color: #fff; }
 .app-mark {

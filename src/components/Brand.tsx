@@ -28,7 +28,7 @@ export function CogenSightLockup({ onClick }: { onClick?: (e: React.MouseEvent) 
   return (
     <a href="#dashboard" className="cs-card" onClick={onClick} aria-label="CogenSight, Sports2000 back office home">
       <span className="cs-logo">
-        <img src={`${import.meta.env.BASE_URL}brand/cogensight-logo.png`} alt="CogenSight" style={{ height: 58, width: 'auto', display: 'block' }} />
+        <img src={`${import.meta.env.BASE_URL}brand/cogensight-logo.png`} alt="CogenSight" style={{ height: 76, width: 'auto', display: 'block', margin: '-6px 0 -8px' }} />
       </span>
       <span className="cs-tag">Co-Creating Value</span>
     </a>
