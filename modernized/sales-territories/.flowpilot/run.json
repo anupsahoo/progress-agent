@@ -1,0 +1,9 @@
+{
+  "run_id": "emv4ackaf",
+  "module": "sales-territories",
+  "wave": 1,
+  "legacy_programs": 52,
+  "legacy_lines": 4585,
+  "generated_by": "FlowPilot AI-DLC (CogenSight)",
+  "human_gate": "A person reviews and merges this pull request in GitHub."
+}
