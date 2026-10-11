@@ -1,150 +1,148 @@
-import React, { useState, useMemo } from 'react';
-import { C, PageHeader, BeforeAfter } from '../components/Shell';
-import { customers } from '../data/sports';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Download, Package, Pencil } from 'lucide-react';
+import { customers, ordersByCustomer, orderTotal, utilisation, type Customer } from '../data/sports';
+import { ModernizedLayout } from '../components/ModernizationPanel';
+import { Card, DataTable, Drawer, Pill, StatusPill, UtilMeter, initials, type Column } from '../components/ui';
+import { fmtDate, fmtMoney, fmtMoney0 } from '../theme';
 
-const PROGRESS_SCREEN = `CustNum  Name                          State       Balance
-───────  ───────────────────────────   ────────    ─────────
-      6  Fanatical Athletes            AL          1,202.66
-      8  Game Set Match                AL          8,254.00
-     51  Mountain Bikes Etc            CO          2,100.00
-     66  Runners High                  CO            785.40
-      3  Hoops                         GA          1,199.95
-      1  Lift Tours                    MA            903.64
-      5  Match Point Tennis            MA              0.00
-      ...
+/** R2: FOR EACH Customer NO-LOCK BY Customer.State BY Customer.Name */
+const legacyOrder = (a: Customer, b: Customer) => a.state.localeCompare(b.state) || a.name.localeCompare(b.name);
 
-Total Customers : 12
-Total Balance   : 38,914.50`;
+const ablNum = (n: number) => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-type SortKey = 'custNum' | 'name' | 'state' | 'balance' | 'creditLimit';
+function legacyScreen(rows: Customer[]) {
+  const head = `Cust# Customer Name             State     Balance\n───── ───────────────────────── ───── ───────────`;
+  const body = rows.map((c) =>
+    `${String(c.custNum).padStart(5)} ${c.name.slice(0, 25).padEnd(25)} ${c.state.slice(0, 5).padEnd(5)} ${ablNum(c.balance).padStart(11)}`).join('\n');
+  const total = rows.reduce((s, c) => s + c.balance, 0);
+  return `${head}\n${body}\n\n┌─ Information ──────────────────────┐\n│ Total Customers: ${String(rows.length).padEnd(18)}│\n│ Total Balance: ${ablNum(total).padStart(15).padEnd(20)}│\n│              [ OK ]                │\n└────────────────────────────────────┘`;
+}
 
-export function CustomerList() {
-  const [sortKey, setSortKey] = useState<SortKey>('state');
-  const [search, setSearch] = useState('');
-  const [countryFilter, setCountryFilter] = useState('all');
+export function CustomerList({ param, onNavigate }: { param?: string; onNavigate: (r: string) => void }) {
+  const [country, setCountry] = useState('all');
+  const [selected, setSelected] = useState<Customer | null>(null);
 
-  const countries = Array.from(new Set(customers.map(c => c.country))).sort();
+  useEffect(() => {
+    if (param) setSelected(customers.find((c) => c.custNum === parseInt(param, 10)) || null);
+  }, [param]);
 
-  const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    return customers.filter(c => {
-      if (countryFilter !== 'all' && c.country !== countryFilter) return false;
-      if (!q) return true;
-      return c.name.toLowerCase().includes(q) || c.city.toLowerCase().includes(q) || String(c.custNum).includes(q);
-    });
-  }, [search, countryFilter]);
+  const ordered = useMemo(() => [...customers].sort(legacyOrder), []);
+  const countries = useMemo(() => Array.from(new Set(customers.map((c) => c.country))).sort(), []);
+  const rows = country === 'all' ? ordered : ordered.filter((c) => c.country === country);
+  const screen = useMemo(() => legacyScreen(ordered), [ordered]);
 
-  const sorted = useMemo(() => [...filtered].sort((a, b) => {
-    const av: any = (a as any)[sortKey];
-    const bv: any = (b as any)[sortKey];
-    if (typeof av === 'number') return bv - av;
-    return String(av).localeCompare(String(bv));
-  }), [filtered, sortKey]);
+  const cols: Column<Customer>[] = [
+    { key: 'custNum', header: 'Cust#', render: (c) => <span className="mono cell-strong">{c.custNum}</span>, sortValue: (c) => c.custNum },
+    { key: 'name', header: 'Customer', render: (c) => <><div className="cell-strong">{c.name}</div><div className="cell-sub">{c.contact}</div></>, sortValue: (c) => c.name },
+    { key: 'state', header: 'State', render: (c) => c.state || <span className="muted">None</span>, sortValue: (c) => c.state },
+    { key: 'city', header: 'Location', render: (c) => <><div>{c.city}</div><div className="cell-sub">{c.country}</div></>, sortValue: (c) => c.city },
+    { key: 'balance', header: 'Balance', align: 'right', render: (c) => <span className="num cell-strong">{fmtMoney(c.balance)}</span>, sortValue: (c) => c.balance },
+    { key: 'util', header: 'Credit used', render: (c) => <UtilMeter ratio={utilisation(c)} width={48} />, sortValue: (c) => utilisation(c) },
+  ];
 
-  const totalBalance = filtered.reduce((s, c) => s + c.balance, 0);
-  const totalCreditLimit = filtered.reduce((s, c) => s + c.creditLimit, 0);
+  const exportCsv = () => {
+    const csv = ['CustNum,Name,State,Balance', ...rows.map((c) => `${c.custNum},"${c.name}",${c.state},${c.balance.toFixed(2)}`)].join('\n');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+    a.download = 'customers.csv';
+    a.click();
+  };
 
   return (
-    <div>
-      <PageHeader
-        title="Customer List"
-        subtitle="All customers sorted by state & name. Originally a scrolling text report; now a sortable, searchable table with live totals."
-        source="sports/sample-customer-list.p"
-      />
+    <ModernizedLayout
+      program="customer_list"
+      title="Customers"
+      subtitle="Every customer account, ordered by state and name as in the original report, with live balance totals."
+      crumbs={['Customers', 'All customers']}
+      legacyScreen={screen}
+      actions={<button className="btn" onClick={exportCsv}><Download size={16} /> Export CSV</button>}
+    >
+      <Card pad={false}>
+        <DataTable
+          columns={cols}
+          rows={rows}
+          rowKey={(c) => c.custNum}
+          searchText={(c) => `${c.custNum} ${c.name} ${c.city} ${c.state} ${c.contact}`}
+          searchPlaceholder="Search name, city, state or number"
+          onRowClick={setSelected}
+          selectedKey={selected?.custNum}
+          maxHeight={600}
+          toolbar={
+            <>
+              <select className="select" style={{ width: 200 }} value={country} onChange={(e) => setCountry(e.target.value)} aria-label="Filter by country">
+                <option value="all">All countries</option>
+                {countries.map((c) => <option key={c} value={c}>{c}</option>)}
+              </select>
+              <span className="muted" style={{ fontSize: 13.5, marginLeft: 'auto' }}>Default order: State, then Name</span>
+            </>
+          }
+          footer={(all) => (
+            <tr>
+              <td colSpan={4}>Total customers: <span className="num">{all.length}</span></td>
+              <td className="num right">{fmtMoney(all.reduce((s, c) => s + c.balance, 0))}</td>
+              <td className="muted" style={{ fontWeight: 500 }}>Total balance</td>
+            </tr>
+          )}
+        />
+      </Card>
 
-      <BeforeAfter beforeContent={PROGRESS_SCREEN}>
-        {/* Toolbar */}
-        <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
-          <input
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder="Search name, city, or #…"
-            style={{
-              flex: 1, minWidth: 180,
-              padding: '9px 12px', borderRadius: 6,
-              border: `1px solid ${C.bdr}`, fontSize: 13, fontFamily: C.sans,
-            }}
-          />
-          <select
-            value={countryFilter}
-            onChange={e => setCountryFilter(e.target.value)}
-            style={{ padding: '9px 12px', borderRadius: 6, border: `1px solid ${C.bdr}`, fontSize: 13, background: 'white', cursor: 'pointer' }}
-          >
-            <option value="all">All countries ({customers.length})</option>
-            {countries.map(c => (
-              <option key={c} value={c}>{c}</option>
-            ))}
-          </select>
-          <select
-            value={sortKey}
-            onChange={e => setSortKey(e.target.value as SortKey)}
-            style={{ padding: '9px 12px', borderRadius: 6, border: `1px solid ${C.bdr}`, fontSize: 13, background: 'white', cursor: 'pointer' }}
-          >
-            <option value="state">Sort by State</option>
-            <option value="name">Sort by Name</option>
-            <option value="custNum">Sort by Cust #</option>
-            <option value="balance">Sort by Balance</option>
-            <option value="creditLimit">Sort by Credit Limit</option>
-          </select>
-        </div>
-
-        {/* Summary cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 16 }}>
-          <StatCard label="Customers" value={String(filtered.length)} color={C.ind} />
-          <StatCard label="Total Balance" value={`$${totalBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} color={C.amber} />
-          <StatCard label="Credit Limit" value={`$${totalCreditLimit.toLocaleString()}`} color={C.green} />
-        </div>
-
-        {/* Table */}
-        <div style={{ overflow: 'auto', maxHeight: 420, border: `1px solid ${C.bdr}`, borderRadius: 8 }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13, background: 'white' }}>
-            <thead style={{ position: 'sticky', top: 0 }}>
-              <tr>
-                {['#', 'Name', 'Country', 'State', 'City', 'Rep', 'Credit', 'Balance'].map(h => (
-                  <th key={h} style={{
-                    padding: '10px 12px', textAlign: 'left',
-                    background: C.card, borderBottom: `1px solid ${C.bdr}`,
-                    fontSize: 10, fontWeight: 700, fontFamily: C.mono,
-                    textTransform: 'uppercase', letterSpacing: '0.05em', color: C.t3,
-                  }}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {sorted.map(c => (
-                <tr key={c.custNum} style={{ borderTop: `1px solid ${C.bdr}` }}>
-                  <td style={{ padding: '9px 12px', fontFamily: C.mono, fontWeight: 600, color: C.t2 }}>#{c.custNum}</td>
-                  <td style={{ padding: '9px 12px', fontWeight: 600, color: C.t1 }}>{c.name}</td>
-                  <td style={{ padding: '9px 12px', color: C.t2 }}>{c.country}</td>
-                  <td style={{ padding: '9px 12px', fontFamily: C.mono, fontSize: 12, color: C.t2 }}>{c.state || '—'}</td>
-                  <td style={{ padding: '9px 12px', color: C.t2 }}>{c.city}</td>
-                  <td style={{ padding: '9px 12px', fontFamily: C.mono, fontSize: 12, color: C.t2 }}>{c.salesRep}</td>
-                  <td style={{ padding: '9px 12px', fontFamily: C.mono, fontWeight: 600, textAlign: 'right', color: C.t1 }}>
-                    ${c.creditLimit.toLocaleString()}
-                  </td>
-                  <td style={{ padding: '9px 12px', fontFamily: C.mono, fontWeight: 700, textAlign: 'right', color: c.balance > c.creditLimit * 0.8 ? C.red : C.t1 }}>
-                    ${c.balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </BeforeAfter>
-    </div>
+      <CustomerDrawer customer={selected} onClose={() => setSelected(null)} onNavigate={onNavigate} />
+    </ModernizedLayout>
   );
 }
 
-function StatCard({ label, value, color }: { label: string; value: string; color: string }) {
+function CustomerDrawer({ customer: c, onClose, onNavigate }: { customer: Customer | null; onClose: () => void; onNavigate: (r: string) => void }) {
+  if (!c) return null;
+  const os = ordersByCustomer(c.custNum);
   return (
-    <div style={{
-      padding: '12px 14px', borderRadius: 8, background: 'white',
-      border: `1px solid ${color}22`, borderTop: `3px solid ${color}`,
-    }}>
-      <div style={{ fontSize: 10, fontWeight: 700, color: C.t3, fontFamily: C.mono, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-        {label}
+    <Drawer
+      open
+      onClose={onClose}
+      title={<span className="row" style={{ gap: 12 }}><span className="avatar-sm">{initials(c.name)}</span>{c.name}</span>}
+      subtitle={<span><span className="mono">#{c.custNum}</span> · {c.city}{c.state ? `, ${c.state}` : ''} · {c.country}</span>}
+      footer={
+        <>
+          <button className="btn" onClick={() => onNavigate(`customer-orders/${c.custNum}`)}><Package size={16} /> View orders</button>
+          <button className="btn primary" onClick={() => onNavigate(`customer-maint/${c.custNum}`)}><Pencil size={16} /> Edit customer</button>
+        </>
+      }
+    >
+      <div className="grid-2" style={{ gap: 12, marginBottom: 22 }}>
+        <div className="card" style={{ padding: 14 }}>
+          <div className="muted" style={{ fontSize: 13.5 }}>Balance</div>
+          <div style={{ fontSize: 22, fontWeight: 700 }} className="num">{fmtMoney(c.balance)}</div>
+        </div>
+        <div className="card" style={{ padding: 14 }}>
+          <div className="muted" style={{ fontSize: 13.5 }}>Credit limit</div>
+          <div style={{ fontSize: 22, fontWeight: 700 }} className="num">{fmtMoney0(c.creditLimit)}</div>
+        </div>
       </div>
-      <div style={{ fontSize: 20, fontWeight: 800, color, marginTop: 3 }}>{value}</div>
-    </div>
+      <div style={{ marginBottom: 22 }}><UtilMeter ratio={utilisation(c)} width={380} /></div>
+      {c.comments && <div className="alert warn" style={{ marginBottom: 22 }}><span><b>Note:</b> {c.comments}</span></div>}
+
+      <div className="section-title">Contact</div>
+      <dl className="dl" style={{ marginBottom: 24 }}>
+        <dt>Contact</dt><dd>{c.contact}</dd>
+        <dt>Phone</dt><dd className="num">{c.phone}</dd>
+        <dt>Address</dt><dd>{c.address}{c.address2 && c.address2 !== 'Address 2' ? <><br />{c.address2}</> : null}<br />{c.city}{c.state ? `, ${c.state}` : ''} {c.postalCode}</dd>
+        <dt>Sales rep</dt><dd className="mono">{c.salesRep}</dd>
+        <dt>Terms</dt><dd>{c.terms} · {c.discount}% discount</dd>
+      </dl>
+
+      <div className="section-title">Orders ({os.length})</div>
+      {os.length === 0 ? <p className="muted" style={{ margin: 0 }}>No orders on file.</p> : (
+        <div className="card" style={{ overflow: 'hidden' }}>
+          {os.map((o) => (
+            <div className="list-item" key={o.orderNum} style={{ padding: '11px 14px' }}>
+              <span className="mono cell-strong">#{o.orderNum}</span>
+              <span className="muted num">{fmtDate(o.orderDate)}</span>
+              <span className="num" style={{ marginLeft: 'auto' }}>{orderTotal(o.orderNum) ? fmtMoney(orderTotal(o.orderNum)) : ''}</span>
+              <StatusPill status={o.status} />
+            </div>
+          ))}
+        </div>
+      )}
+      <div style={{ marginTop: 16 }}><Pill tone="neutral">Read only view · NO-LOCK</Pill></div>
+    </Drawer>
   );
 }

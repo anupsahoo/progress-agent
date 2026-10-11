@@ -1,6 +1,9 @@
-import React, { useState } from 'react';
-import { C, PageHeader, BeforeAfter } from '../components/Shell';
-import { customers as initial, customerById, type Customer } from '../data/sports';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { CheckCircle2, CircleAlert, History, Lock, LockOpen, RotateCcw, Save, Search } from 'lucide-react';
+import { customers as initial, type Customer } from '../data/sports';
+import { ModernizedLayout } from '../components/ModernizationPanel';
+import { Card, Field, Pill, UtilMeter, initials } from '../components/ui';
+import { T } from '../theme';
 
 const PROGRESS_SCREEN = `┌──────────────────────────────────────────────────────────────────┐
 │                 Customer Maintenance - Sports2000                │
@@ -19,220 +22,203 @@ const PROGRESS_SCREEN = `┌─────────────────�
 │  F1=Help   F4=Clear   F10=Save   ESC=Exit                        │
 └──────────────────────────────────────────────────────────────────┘`;
 
-export function CustomerMaint() {
-  const [db, setDb] = useState<Customer[]>(initial);
-  const [custNumInput, setCustNumInput] = useState('3');
-  const [draft, setDraft] = useState<Customer | null>(customerById(3) || null);
-  const [saved, setSaved] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+/** Legacy messages, verbatim from customer_maint.p (R2, R4). */
+const MSG_NOT_FOUND = 'Customer not found.';
+const MSG_UPDATED = 'Record updated successfully.';
 
-  const load = () => {
-    const n = parseInt(custNumInput, 10);
-    const found = db.find(c => c.custNum === n);
+type Editable = 'name' | 'address' | 'city' | 'state' | 'postalCode' | 'phone';
+
+/** Editable fields from the UPDATE statement, with widths from sports2000.df FORMAT x(n). */
+const FIELDS: { key: Editable; label: string; max: number; span: string; required?: boolean }[] = [
+  { key: 'name', label: 'Name', max: 30, span: 'span-4', required: true },
+  { key: 'address', label: 'Address', max: 35, span: 'span-6' },
+  { key: 'city', label: 'City', max: 25, span: 'span-2' },
+  { key: 'state', label: 'State', max: 20, span: 'span-2' },
+  { key: 'postalCode', label: 'Postal code', max: 10, span: 'span-2' },
+  { key: 'phone', label: 'Phone', max: 20, span: 'span-3' },
+];
+
+type Rec = Customer & { version: number };
+
+function validate(d: Rec): Partial<Record<Editable, string>> {
+  const e: Partial<Record<Editable, string>> = {};
+  FIELDS.forEach((f) => {
+    const v = d[f.key];
+    if (f.required && !v.trim()) e[f.key] = `${f.label} is required.`;
+    else if (v.length > f.max) e[f.key] = `${f.label} can be at most ${f.max} characters (x(${f.max})).`;
+  });
+  return e;
+}
+
+export function CustomerMaint({ param }: { param?: string }) {
+  const [db, setDb] = useState<Rec[]>(() => initial.map((c) => ({ ...c, version: 1 })));
+  const [custNumInput, setCustNumInput] = useState(param || '3');
+  const [original, setOriginal] = useState<Rec | null>(null);
+  const [draft, setDraft] = useState<Rec | null>(null);
+  const [locked, setLocked] = useState(false);
+  const [message, setMessage] = useState<{ kind: 'error' | 'success'; text: string } | null>(null);
+  const [touched, setTouched] = useState(false);
+  const [recent, setRecent] = useState<number[]>([]);
+  const firstField = useRef<HTMLInputElement>(null);
+
+  // R1 + R2: look up by CustNum.
+  const lookup = (raw: string, focus = true) => {
+    const n = parseInt(raw, 10);
+    const found = db.find((c) => c.custNum === n);
+    setTouched(false);
     if (!found) {
-      setError(`Customer #${n} not found.`);
-      setDraft(null);
+      setMessage({ kind: 'error', text: MSG_NOT_FOUND });
+      setDraft(null); setOriginal(null); setLocked(false);
       return;
     }
-    setError(null);
+    setMessage(null);
+    setOriginal(found);
     setDraft({ ...found });
-    setSaved(null);
+    setLocked(true); // R5: hold the record while editing
+    setRecent((r) => [found.custNum, ...r.filter((x) => x !== found.custNum)].slice(0, 5));
+    if (focus) setTimeout(() => firstField.current?.focus(), 0);
   };
 
+  useEffect(() => { lookup(param || '3', false); /* initial load */ }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const errors = useMemo(() => (draft ? validate(draft) : {}), [draft]);
+  const hasErrors = Object.keys(errors).length > 0;
+  const dirtyKeys = draft && original ? FIELDS.filter((f) => draft[f.key] !== original[f.key]).map((f) => f.key) : [];
+
+  // R4 + R5 + R6: save with version check, then release.
   const save = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!draft) return;
-    setDb(db.map(c => c.custNum === draft.custNum ? draft : c));
-    setSaved(`Customer #${draft.custNum} updated.`);
-    setTimeout(() => setSaved(null), 3000);
+    if (!draft || !original) return;
+    setTouched(true);
+    if (hasErrors) return;
+    const current = db.find((c) => c.custNum === draft.custNum);
+    if (!current || current.version !== original.version) {
+      setMessage({ kind: 'error', text: 'This record was changed by someone else. Reload it and try again.' });
+      return;
+    }
+    const saved = { ...draft, version: original.version + 1 };
+    setDb(db.map((c) => (c.custNum === saved.custNum ? saved : c)));
+    setOriginal(saved);
+    setDraft(saved);
+    setLocked(false);
+    setMessage({ kind: 'success', text: MSG_UPDATED });
   };
 
+  const cancel = () => {
+    setDraft(null); setOriginal(null); setLocked(false); setMessage(null);
+  };
+
+  const util = draft && draft.creditLimit > 0 ? draft.balance / draft.creditLimit : 0;
+
   return (
-    <div>
-      <PageHeader
-        title="Customer Maintenance"
-        subtitle="Update customer information. Originally a character-based ABL frame; now a responsive form with inline validation and optimistic save."
-        source="sports/customer_maint.p"
-      />
-
-      <BeforeAfter beforeContent={PROGRESS_SCREEN}>
-        <form onSubmit={save}>
-          <div style={{
-            display: 'flex', gap: 8, marginBottom: 20,
-            padding: 12, background: C.card, borderRadius: 8,
-          }}>
-            <Label text="Customer Number">
-              <input
-                value={custNumInput}
-                onChange={e => setCustNumInput(e.target.value)}
-                style={inputStyle}
-                type="number"
-              />
-            </Label>
-            <button type="button" onClick={load} style={primaryBtn}>
-              Load
-            </button>
-          </div>
-
-          {error && <div style={errorBox}>{error}</div>}
-          {saved && <div style={successBox}>✓ {saved}</div>}
-
-          {draft && (
-            <>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-                <Field label="Customer Name"
-                  value={draft.name}
-                  onChange={v => setDraft({ ...draft, name: v })}
-                />
-                <Field label="Contact"
-                  value={draft.contact}
-                  onChange={v => setDraft({ ...draft, contact: v })}
-                />
-                <Field label="Address Line 1"
-                  value={draft.address}
-                  onChange={v => setDraft({ ...draft, address: v })}
-                  wide
-                />
-                <Field label="Address Line 2"
-                  value={draft.address2}
-                  onChange={v => setDraft({ ...draft, address2: v })}
-                  wide
-                />
-                <Field label="City"
-                  value={draft.city}
-                  onChange={v => setDraft({ ...draft, city: v })}
-                />
-                <Field label="State / Region"
-                  value={draft.state}
-                  onChange={v => setDraft({ ...draft, state: v })}
-                />
-                <Field label="Postal Code"
-                  value={draft.postalCode}
-                  onChange={v => setDraft({ ...draft, postalCode: v })}
-                />
-                <Field label="Phone"
-                  value={draft.phone}
-                  onChange={v => setDraft({ ...draft, phone: v })}
-                />
-              </div>
-
-              <div style={{ marginTop: 22, display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-                <Pill label="Credit Limit" value={`$${draft.creditLimit.toLocaleString()}`} color={C.ind} />
-                <Pill label="Balance" value={`$${draft.balance.toFixed(2)}`} color={draft.balance > draft.creditLimit * 0.8 ? C.red : C.green} />
-                <Pill label="Terms" value={draft.terms} color={C.t2} />
-                <Pill label="Sales Rep" value={draft.salesRep} color={C.t2} />
-                <button type="submit" style={{ ...primaryBtn, marginLeft: 'auto' }}>Save Changes</button>
-              </div>
-
-              {draft.comments && (
-                <div style={{
-                  marginTop: 16, padding: '10px 14px',
-                  background: '#fef3c7', border: `1px solid ${C.amber}`,
-                  borderRadius: 6, fontSize: 13, color: '#92400e',
-                }}>
-                  <strong>Note:</strong> {draft.comments}
-                </div>
-              )}
-            </>
+    <ModernizedLayout
+      program="customer_maint"
+      title="Customer maintenance"
+      subtitle="Find a customer by number and update their name, address and phone details."
+      crumbs={['Customers', 'Maintenance']}
+      legacyScreen={PROGRESS_SCREEN}
+    >
+      <Card pad>
+        <form onSubmit={(e) => { e.preventDefault(); lookup(custNumInput); }} className="row" style={{ alignItems: 'flex-end', flexWrap: 'wrap', gap: 14 }}>
+          <Field label="Customer number" htmlFor="custnum" className="" hint="Enter a CustNum, for example 3 or 53.">
+            <div className="input-icon" style={{ width: 240 }}>
+              <Search size={16} />
+              <input id="custnum" className="input mono" inputMode="numeric" value={custNumInput}
+                onChange={(e) => setCustNumInput(e.target.value.replace(/[^0-9]/g, ''))} autoComplete="off" />
+            </div>
+          </Field>
+          <button type="submit" className="btn primary" style={{ marginBottom: 26 }}>Look up</button>
+          {recent.length > 0 && (
+            <div className="row" style={{ gap: 8, marginBottom: 26, flexWrap: 'wrap', marginLeft: 'auto' }}>
+              <span className="muted row" style={{ gap: 6, fontSize: 14 }}><History size={15} /> Recent</span>
+              {recent.map((n) => (
+                <button key={n} type="button" className="btn sm" onClick={() => { setCustNumInput(String(n)); lookup(String(n)); }}>#{n}</button>
+              ))}
+            </div>
           )}
         </form>
-      </BeforeAfter>
 
-      <DiffNote rows={[
-        ['Input method', 'UPDATE frame with F-keys', 'HTML form with tab navigation'],
-        ['Validation', 'Post-submit (EXCLUSIVE-LOCK)', 'Inline + optimistic'],
-        ['Save', 'Blocking until UPDATE complete', 'Non-blocking, async persistence'],
-        ['Error handling', 'MESSAGE ... VIEW-AS ALERT-BOX', 'Inline banner with dismiss'],
-      ]} />
-    </div>
-  );
-}
+        {message && (
+          <div className={`alert ${message.kind}`} role={message.kind === 'error' ? 'alert' : 'status'}>
+            {message.kind === 'error' ? <CircleAlert size={18} /> : <CheckCircle2 size={18} />}
+            <span>{message.text}</span>
+          </div>
+        )}
+      </Card>
 
-/* ─── Small helpers ─────────────────────────────────────── */
+      {draft && (
+        <form onSubmit={save} noValidate>
+          <Card
+            title={
+              <span className="row" style={{ gap: 12 }}>
+                <span className="avatar-sm" style={{ background: T.color.brandSoft, color: T.color.brand, borderColor: T.color.brandSoftBorder }}>{initials(draft.name || '?')}</span>
+                <span>
+                  <span style={{ display: 'block' }}>{original?.name}</span>
+                  <span className="cell-sub" style={{ fontWeight: 400 }}>{draft.contact} · {draft.country} · Sales rep {draft.salesRep}</span>
+                </span>
+              </span>
+            }
+            actions={locked
+              ? <Pill tone="brand"><Lock size={13} /> Editing · record held</Pill>
+              : <Pill tone="neutral"><LockOpen size={13} /> Lock released</Pill>}
+          >
+            <div className="form-grid">
+              <Field label="Customer number" htmlFor="f-custnum" className="span-2" extra={<Lock size={13} color={T.color.textFaint} aria-label="Read only" />}>
+                <input id="f-custnum" className="input mono" value={draft.custNum} readOnly aria-readonly />
+              </Field>
+              {FIELDS.map((f, i) => {
+                const err = touched || dirtyKeys.includes(f.key) ? errors[f.key] : undefined;
+                const dirty = dirtyKeys.includes(f.key);
+                return (
+                  <Field key={f.key} label={f.label} htmlFor={`f-${f.key}`} className={f.span} error={err}
+                    hint={dirty ? `${draft[f.key].length} of ${f.max} characters` : undefined}
+                    extra={dirty ? <span className="pill brand" style={{ height: 20, fontSize: 11.5, padding: '0 7px' }}>Edited</span> : undefined}>
+                    <input
+                      id={`f-${f.key}`}
+                      ref={i === 0 ? firstField : undefined}
+                      className={`input ${err ? 'invalid' : dirty ? 'dirty' : ''}`}
+                      value={draft[f.key]}
+                      readOnly={!locked}
+                      aria-invalid={!!err}
+                      onChange={(e) => { setDraft({ ...draft, [f.key]: e.target.value }); if (message?.kind === 'success') setMessage(null); }}
+                    />
+                  </Field>
+                );
+              })}
+              <div className="span-3 field">
+                <label>Credit utilisation</label>
+                <div style={{ height: 42, display: 'flex', alignItems: 'center' }}><UtilMeter ratio={util} width={140} /></div>
+                <div className="hint">Read only, managed in Credit management</div>
+              </div>
+            </div>
 
-const inputStyle: React.CSSProperties = {
-  padding: '8px 12px', borderRadius: 6, border: `1px solid ${C.bdr}`,
-  fontSize: 14, fontFamily: C.sans, outline: 'none',
-  width: '100%',
-};
+            {draft.comments && (
+              <div className="alert warn" style={{ marginTop: 20 }}>
+                <CircleAlert size={18} /><span><b>Account note:</b> {draft.comments}</span>
+              </div>
+            )}
 
-const primaryBtn: React.CSSProperties = {
-  padding: '8px 18px', borderRadius: 6, border: 'none',
-  background: C.ind, color: 'white', fontSize: 13, fontWeight: 700,
-  cursor: 'pointer', fontFamily: C.sans,
-};
-
-const errorBox: React.CSSProperties = {
-  padding: '10px 14px', borderRadius: 6, marginBottom: 14,
-  background: '#fee2e2', color: '#991b1b', fontSize: 13,
-  border: `1px solid #fecaca`,
-};
-const successBox: React.CSSProperties = {
-  padding: '10px 14px', borderRadius: 6, marginBottom: 14,
-  background: '#d1fae5', color: '#065f46', fontSize: 13,
-  border: `1px solid #86efac`,
-};
-
-function Label({ text, children }: { text: string; children: React.ReactNode }) {
-  return (
-    <label style={{ flex: 1, fontSize: 13 }}>
-      <div style={{ fontSize: 10, fontWeight: 700, color: C.t3, fontFamily: C.mono, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>
-        {text}
-      </div>
-      {children}
-    </label>
-  );
-}
-
-function Field({ label, value, onChange, wide }: { label: string; value: string; onChange: (v: string) => void; wide?: boolean }) {
-  return (
-    <div style={wide ? { gridColumn: '1 / -1' } : undefined}>
-      <Label text={label}>
-        <input value={value} onChange={e => onChange(e.target.value)} style={inputStyle} />
-      </Label>
-    </div>
-  );
-}
-
-function Pill({ label, value, color }: { label: string; value: string; color: string }) {
-  return (
-    <div style={{
-      padding: '5px 10px', borderRadius: 6,
-      background: color + '14', color,
-      fontSize: 12, fontFamily: C.mono, fontWeight: 700,
-    }}>
-      <span style={{ opacity: 0.75, marginRight: 6 }}>{label}:</span>{value}
-    </div>
-  );
-}
-
-function DiffNote({ rows }: { rows: [string, string, string][] }) {
-  return (
-    <div style={{
-      background: 'white', border: `1px solid ${C.bdr}`,
-      borderRadius: 12, padding: 20, marginTop: 8,
-    }}>
-      <div style={{ fontSize: 13, fontWeight: 700, color: C.t1, marginBottom: 12 }}>
-        Key UX improvements
-      </div>
-      <table style={{ width: '100%', fontSize: 13, borderCollapse: 'collapse' }}>
-        <thead>
-          <tr style={{ color: C.t3 }}>
-            <th style={{ textAlign: 'left', padding: '6px 0', fontSize: 10, fontFamily: C.mono, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700 }}>Aspect</th>
-            <th style={{ textAlign: 'left', padding: '6px 0', fontSize: 10, fontFamily: C.mono, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700 }}>Before (ABL)</th>
-            <th style={{ textAlign: 'left', padding: '6px 0', fontSize: 10, fontFamily: C.mono, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700 }}>After (React)</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((r, i) => (
-            <tr key={i} style={{ borderTop: `1px solid ${C.bdr}` }}>
-              <td style={{ padding: '10px 12px 10px 0', fontWeight: 600, color: C.t1 }}>{r[0]}</td>
-              <td style={{ padding: '10px 12px', color: C.t2, fontFamily: C.mono, fontSize: 12 }}>{r[1]}</td>
-              <td style={{ padding: '10px 0', color: C.green, fontFamily: C.mono, fontSize: 12 }}>{r[2]}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+            <div className="row" style={{ marginTop: 22, paddingTop: 18, borderTop: `1px solid ${T.color.border}`, flexWrap: 'wrap' }}>
+              <span className="muted" style={{ fontSize: 14 }}>
+                {locked
+                  ? dirtyKeys.length ? `${dirtyKeys.length} unsaved change${dirtyKeys.length > 1 ? 's' : ''}` : 'No changes yet'
+                  : 'Saved. Look up the customer again to make further edits.'}
+                <span className="mono" style={{ marginLeft: 10, fontSize: 12.5, color: T.color.textFaint }}>v{original?.version}</span>
+              </span>
+              <div className="row" style={{ marginLeft: 'auto', gap: 10 }}>
+                {locked ? (
+                  <>
+                    <button type="button" className="btn" onClick={cancel}>Cancel</button>
+                    <button type="submit" className="btn primary" disabled={touched && hasErrors}><Save size={16} /> Save changes</button>
+                  </>
+                ) : (
+                  <button type="button" className="btn" onClick={() => lookup(String(draft.custNum))}><RotateCcw size={16} /> Edit again</button>
+                )}
+              </div>
+            </div>
+          </Card>
+        </form>
+      )}
+    </ModernizedLayout>
   );
 }
