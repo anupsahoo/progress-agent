@@ -77,7 +77,7 @@ export function Shell({ children, onNavigate, currentRoute, activeModule }: {
           {NAV_MOD.map(item)}
         </nav>
         <div className="sidebar-foot">
-          Modernized from Progress OpenEdge by <strong>FlowPilot</strong> · <strong>CogenSight</strong>
+          Sports2000 · <strong>CogenSight</strong> · Co-Creating Value
         </div>
       </aside>
 
@@ -110,7 +110,7 @@ export function Shell({ children, onNavigate, currentRoute, activeModule }: {
         <footer className="footer">
           <span className="credit">
             <CogenSightMark size={18} />
-            Modernized from <b>Progress OpenEdge</b> by <b>FlowPilot</b> · <b>CogenSight</b>
+            Sports2000 · <b>CogenSight</b>
           </span>
           <span>Sports2000 sample data · Demo environment</span>
         </footer>
