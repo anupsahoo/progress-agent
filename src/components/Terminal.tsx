@@ -108,14 +108,14 @@ export function Terminal({
         <div className="term-inner" style={{ width: `${cols}ch` }}>
           <div className="term-grid" style={{ minHeight: `${rows * 1.32}em` }}>{children}</div>
           {alert && <TAlertBox alert={alert} cols={cols} />}
-          <div className="term-status" data-map={undefined}>{status ?? ' '}</div>
-          <div className="term-fkeys">
+          {status != null && <div className="term-status">{status}</div>}
+          {fkeys.length > 0 && <div className="term-fkeys">
             {fkeys.map((f) => (
               <button key={f.k} type="button" onClick={f.onClick} disabled={!f.onClick} title={f.title} data-map={`fkey-${f.k}`}>
                 <b>{f.k}</b>={f.label}
               </button>
             ))}
-          </div>
+          </div>}
         </div>
         <div className="term-scan" aria-hidden />
       </div>

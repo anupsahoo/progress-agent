@@ -3,11 +3,36 @@ import { AlertTriangle, ArrowRight, CheckCircle2, CircleDollarSign, Gauge, Packa
 import { customers, orders, orderLines, orderTotal, customerLabel, utilisation, isOpenOrder } from '../data/sports';
 import { PROGRAMS } from '../data/modernization';
 import { Card, Kpi, PageHeader, Pill, StatusPill, UtilMeter, initials } from '../components/ui';
+import { useLive } from '../data/live';
+import { ESTATE, FEATURED_BY_MODULE } from '../data/estate';
+import { EstateHero, LegacyMainMenu, ModuleGrid, PullStrip } from './Estate';
 import { T, fmtDate, fmtMoney, fmtMoney0, fmtPct } from '../theme';
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 export function Dashboard({ onNavigate }: { onNavigate: (r: string) => void }) {
+  const live = useLive();
+  const opsModern = ESTATE.modules.some((m) => FEATURED_BY_MODULE[m.id] && live.isModern(m.id));
+  return (
+    <>
+      <EstateHero />
+      <div className="dash-estate">
+        <div className="stack" style={{ minWidth: 0 }}>
+          <div className="section-head"><h2>Modules</h2><span className="muted">Tiles flip to modern as FlowPilot pull requests land</span></div>
+          <ModuleGrid onNavigate={onNavigate} />
+        </div>
+        <div className="stack" style={{ minWidth: 0 }}>
+          <PullStrip onNavigate={onNavigate} />
+          <div className="section-head"><h2>{opsModern ? 'Character UI, still available' : 'What users see today'}</h2></div>
+          <LegacyMainMenu onNavigate={onNavigate} />
+        </div>
+      </div>
+      {opsModern && <div style={{ marginTop: 40 }}><OperationsOverview onNavigate={onNavigate} /></div>}
+    </>
+  );
+}
+
+function OperationsOverview({ onNavigate }: { onNavigate: (r: string) => void }) {
   const revenue = orderLines.reduce((s, l) => s + l.extendedPrice, 0);
   const open = orders.filter(isOpenOrder);
   const avgUtil = customers.reduce((s, c) => s + utilisation(c), 0) / customers.length;
@@ -19,8 +44,8 @@ export function Dashboard({ onNavigate }: { onNavigate: (r: string) => void }) {
   return (
     <>
       <PageHeader
-        title="Good morning, Alex"
-        subtitle="Sales, orders and credit exposure across the Sports2000 customer base."
+        title="Operations overview"
+        subtitle="Sales, orders and credit exposure across the Sports2000 customer base, from the modernized modules."
         actions={
           <>
             <button className="btn" onClick={() => onNavigate('order-report')}>Order report</button>

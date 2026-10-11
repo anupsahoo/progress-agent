@@ -1,32 +1,32 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  ArrowLeftRight, BarChart3, CreditCard, FileText, LayoutDashboard, Menu, Package,
-  Search, UserCog, Users,
+  ArrowLeftRight, BarChart3, LayoutDashboard, Menu, Package,
+  Search, Users,
 } from 'lucide-react';
 import { customers, orders, customerLabel } from '../data/sports';
 import { CogenSightLockup, CogenSightMark } from './Brand';
+import { ESTATE } from '../data/estate';
+import { useLive } from '../data/live';
 
 interface NavItem { id: string; label: string; icon: React.ReactNode }
 
 const NAV: NavItem[] = [
-  { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={18} /> },
-  { id: 'customer-list', label: 'Customers', icon: <Users size={18} /> },
-  { id: 'customer-maint', label: 'Customer maintenance', icon: <UserCog size={18} /> },
-  { id: 'customer-orders', label: 'Orders', icon: <Package size={18} /> },
-  { id: 'order-report', label: 'Order report', icon: <FileText size={18} /> },
-  { id: 'update-credit', label: 'Credit management', icon: <CreditCard size={18} /> },
+  { id: 'dashboard', label: 'Estate overview', icon: <LayoutDashboard size={18} /> },
 ];
 const NAV_MOD: NavItem[] = [
   { id: 'mapping', label: 'Legacy ↔ modern mapping', icon: <ArrowLeftRight size={18} /> },
   { id: 'roi', label: 'ROI', icon: <BarChart3 size={18} /> },
 ];
 
-export function Shell({ children, onNavigate, currentRoute }: {
+export function Shell({ children, onNavigate, currentRoute, activeModule }: {
   children: React.ReactNode;
   onNavigate: (route: string) => void;
   currentRoute: string;
+  activeModule?: string;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const live = useLive();
+  const total = ESTATE.modules.length;
   const go = (id: string) => { setMenuOpen(false); onNavigate(id); };
 
   const item = (n: NavItem) => (
@@ -50,12 +50,27 @@ export function Shell({ children, onNavigate, currentRoute }: {
           <span className="app-mark"><Logo /></span>
           <span>
             <div className="brand-name">Sports2000</div>
-            <div className="brand-sub">Back office</div>
+            <div className="brand-sub">Enterprise back office</div>
           </span>
         </div>
-        <nav className="nav-group" aria-label="Operations">
-          <div className="nav-label">Operations</div>
+        <nav className="nav-group" aria-label="Overview">
           {NAV.map(item)}
+        </nav>
+        <nav className="nav-group" aria-label="Modules">
+          <div className="nav-label nav-label-row">Modules <span>{live.modernCount}/{total} modern</span></div>
+          {ESTATE.modules.map((m) => {
+            const st = live.status(m.id);
+            const on = activeModule === m.id;
+            return (
+              <a key={m.id} href={`#m/${m.id}`} className={`nav-item mod ${on ? 'active' : ''}`} aria-current={on ? 'page' : undefined}
+                onClick={(e) => { e.preventDefault(); go(`m/${m.id}`); }}>
+                <span className={`mdot ${st}`} aria-hidden />
+                <span className="nav-t">{m.title}</span>
+                {st === 'pr' && <span className="nav-pr">PR #{live.prs[m.id]?.number}</span>}
+                {st === 'legacy' && <span className="nav-legacy">ABL</span>}
+              </a>
+            );
+          })}
         </nav>
         <nav className="nav-group" aria-label="Modernization">
           <div className="nav-label">Modernization</div>
@@ -71,9 +86,15 @@ export function Shell({ children, onNavigate, currentRoute }: {
           <button className="btn ghost icon menu-btn" onClick={() => setMenuOpen(true)} aria-label="Open menu"><Menu size={20} /></button>
           <GlobalSearch onNavigate={go} />
           <div className="topbar-right">
-            <span className="env-badge" title="Running the modernized build">
-              <span className="dot" /><span>Modernized<span className="long"> · React + TypeScript</span></span>
-            </span>
+            {live.modernCount === 0 ? (
+              <span className="env-badge legacy" title="No module modernized yet">
+                <span className="dot" /><span>Legacy estate<span className="long"> · {ESTATE.platform}</span></span>
+              </span>
+            ) : (
+              <span className="env-badge" title="Modules running the modernized build">
+                <span className="dot" /><span>{live.modernCount} of {total} modernized<span className="long"> · React + TypeScript</span></span>
+              </span>
+            )}
             <div className="user">
               <span className="avatar" aria-hidden>AS</span>
               <div className="user-meta">
