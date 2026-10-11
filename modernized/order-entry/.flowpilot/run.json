@@ -1,0 +1,9 @@
+{
+  "run_id": "emv4aro3z",
+  "module": "order-entry",
+  "wave": 3,
+  "legacy_programs": 40,
+  "legacy_lines": 4665,
+  "generated_by": "FlowPilot AI-DLC (CogenSight)",
+  "human_gate": "A person reviews and merges this pull request in GitHub."
+}
