@@ -1,0 +1,96 @@
+{
+  "Customer": [
+    {
+      "CustNum": 1,
+      "Country": "USA",
+      "Name": "Lift Tours",
+      "Address": "276 North Drive",
+      "Address2": "",
+      "City": "Burlington",
+      "State": "MA",
+      "PostalCode": "01730",
+      "Contact": "Gloria Shepley",
+      "Phone": "(617) 450-0086",
+      "SalesRep": "HXM",
+      "CreditLimit": 66700,
+      "Balance": 903.64,
+      "Terms": "Net30",
+      "Discount": 35,
+      "Comments": "This customer is on credit hold.",
+      "Fax": "",
+      "EmailAddress": ""
+    },
+    {
+      "CustNum": 2,
+      "Country": "Finland",
+      "Name": "Urpon Frisbee",
+      "Address": "Rattipolku 3",
+      "Address2": "",
+      "City": "Oslo",
+      "State": "Uusima",
+      "PostalCode": "45321",
+      "Contact": "Urpo Leppakoski",
+      "Phone": "(603) 532 5471",
+      "SalesRep": "DKP",
+      "CreditLimit": 27600,
+      "Balance": 437.63,
+      "Terms": "Net30",
+      "Discount": 35,
+      "Comments": "Ship all products 2nd Day Air.",
+      "Fax": "",
+      "EmailAddress": ""
+    },
+    {
+      "CustNum": 3,
+      "Country": "USA",
+      "Name": "Hoops",
+      "Address": "Suite 415",
+      "Address2": "40 Grove St.",
+      "City": "Atlanta",
+      "State": "GA",
+      "PostalCode": "02112",
+      "Contact": "Michael Traitser",
+      "Phone": "(617) 355-1557",
+      "SalesRep": "HXM",
+      "CreditLimit": 75000,
+      "Balance": 1199.95,
+      "Terms": "Net30",
+      "Discount": 10,
+      "Comments": "This customer is now OFF credit hold.",
+      "Fax": "",
+      "EmailAddress": ""
+    }
+  ],
+  "Feedback": [
+    {
+      "Contact": "Antti Oyrinmetsa",
+      "Company": "Antin Metsastysase",
+      "EmailAddress": "aoyrinmetsa@sysma.am.com",
+      "Phone": "",
+      "Fax": "",
+      "Comments": "I enjoy having the selection of products I see here",
+      "Department": "",
+      "Rating": 5
+    },
+    {
+      "Contact": "Joe Smith",
+      "Company": "Lift Line Skiing",
+      "EmailAddress": "joe_smith@liftline.com",
+      "Phone": "",
+      "Fax": "",
+      "Comments": "Your company is making great progress!",
+      "Department": "Accounting",
+      "Rating": 3
+    },
+    {
+      "Contact": "Tim Gottfried",
+      "Company": "Fanatical Athletes",
+      "EmailAddress": "timg@fanaticalathletes.com",
+      "Phone": "",
+      "Fax": "",
+      "Comments": "Raise my credit limit by $5,000",
+      "Department": "Finance/Credit",
+      "Rating": 4
+    }
+  ]
+}
