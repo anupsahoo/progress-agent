@@ -1,0 +1,9 @@
+{
+  "run_id": "emv4ackaf",
+  "module": "inventory",
+  "wave": 2,
+  "legacy_programs": 39,
+  "legacy_lines": 4417,
+  "generated_by": "FlowPilot AI-DLC (CogenSight)",
+  "human_gate": "A person reviews and merges this pull request in GitHub."
+}
