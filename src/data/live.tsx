@@ -10,6 +10,7 @@ import { BUNDLED_MANIFEST, ESTATE } from './estate';
 
 const REPO = 'anupsahoo/progress-agent';
 const MANIFEST_URL = `https://api.github.com/repos/${REPO}/contents/modernization.json?ref=main`;
+const MODERNIZED_DIR_URL = `https://api.github.com/repos/${REPO}/contents/modernized?ref=main`;
 const PULLS_URL = `https://api.github.com/repos/${REPO}/pulls?state=open&per_page=100`;
 const POLL_MS = 20000;
 const BRANCH_PREFIX = 'flowpilot/estate/';
@@ -43,6 +44,8 @@ function params() {
 }
 
 function moduleFromBranch(ref: string): string | undefined {
+  // The single-program AI-DLC run (flowpilot/<stage>/customer_maint-<run>) modernizes customer maintenance.
+  if (/^flowpilot\/(spec|ui|ui-tests|api)\/customer_maint-/.test(ref)) return 'customer-management';
   if (!ref.startsWith(BRANCH_PREFIX)) return undefined;
   const rest = ref.slice(BRANCH_PREFIX.length);
   // Longest module id that matches "<id>-" wins (ids may contain hyphens).
@@ -93,6 +96,17 @@ export function LiveProvider({ children, onChange }: { children: React.ReactNode
           source = p.manifest ? 'override' : 'live';
         }
       } catch { /* offline or rate limited: keep last state */ }
+      // A merged module PR adds modernized/<module>/ to main; count those too,
+      // so module PRs never need to edit a shared file.
+      if (!p.manifest) {
+        try {
+          const r = await fetch(MODERNIZED_DIR_URL, { cache: 'no-store', headers: { Accept: 'application/vnd.github+json' } });
+          if (r.ok) {
+            const dirs = (await r.json()) as { name: string; type: string }[];
+            merged = Array.from(new Set([...merged, ...validIds(dirs.filter((d) => d.type === 'dir').map((d) => d.name))]));
+          }
+        } catch { /* keep last state */ }
+      }
     }
 
     // 2. Open FlowPilot pull requests.

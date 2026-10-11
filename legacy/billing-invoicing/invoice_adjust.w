@@ -1,0 +1,213 @@
+&ANALYZE-SUSPEND _VERSION-NUMBER AB_v10r12 GUI
+&ANALYZE-RESUME
+/*------------------------------------------------------------------------
+    File        : invoice_adjust.w
+    Purpose     : Invoice adjustment with approval
+    Module      : Billing & Invoicing
+    Syntax      :
+    Description : Sports2000 Enterprise back office (sample estate)
+    Author(s)   : Sports2000 IS
+    Created     : 09/09/2008
+  ----------------------------------------------------------------------*/
+
+CREATE WIDGET-POOL.
+{shared/sysdefs.i}
+{billing-invoicing/bi_defs.i}
+
+DEFINE VAR wWin AS WIDGET-HANDLE NO-UNDO.
+DEFINE QUERY qMaster FOR Invoice SCROLLING.
+DEFINE BROWSE brMaster QUERY qMaster NO-LOCK DISPLAY
+    Invoice.Invoicenum COLUMN-LABEL "Invoice Num"
+    Invoice.CustNum COLUMN-LABEL "Cust Num"
+    Invoice.InvoiceDate COLUMN-LABEL "Invoice Date"
+    Invoice.Amount COLUMN-LABEL "Amount"
+    Invoice.TotalPaid COLUMN-LABEL "Total Paid"
+    Invoice.Adjustment COLUMN-LABEL "Adjustment"
+    WITH SIZE 120 BY 9 SEPARATORS.
+
+DEFINE BUTTON btnRefresh LABEL "Refresh" SIZE 12 BY 1.14.
+DEFINE BUTTON btnOpen LABEL "Open" SIZE 12 BY 1.14.
+DEFINE BUTTON btnPrint LABEL "Print" SIZE 12 BY 1.14.
+DEFINE BUTTON btnClose LABEL "Close" SIZE 12 BY 1.14.
+
+DEFINE FRAME fMain
+    brMaster AT ROW 1.5 COL 2
+
+    btnRefresh AT ROW 20 COL 2 btnOpen btnPrint btnClose
+    WITH THREE-D SIZE 124 BY 22 TITLE "Invoice adjustment with approval".
+
+ON VALUE-CHANGED OF brMaster IN FRAME fMain DO:
+  /* single level */
+END.
+
+ON CHOOSE OF btnRefresh IN FRAME fMain DO:
+  OPEN QUERY qMaster FOR EACH Invoice NO-LOCK.
+  APPLY "VALUE-CHANGED":U TO brMaster.
+END.
+
+ON CHOOSE OF btnOpen IN FRAME fMain DO:
+  IF AVAILABLE Invoice THEN RUN billing-invoicing/invoice_maint.p.
+END.
+
+ON CHOOSE OF btnClose IN FRAME fMain DO:
+  APPLY "CLOSE":U TO THIS-PROCEDURE.
+END.
+
+CREATE WINDOW wWin ASSIGN TITLE = "Invoice adjustment with approval" HEIGHT = 22 WIDTH = 124.
+CURRENT-WINDOW = wWin.
+ENABLE ALL WITH FRAME fMain.
+APPLY "CHOOSE":U TO btnRefresh.
+WAIT-FOR CLOSE OF THIS-PROCEDURE.
+
+PROCEDURE flag-invoice-totalpaid0 :
+  DEFINE INPUT  PARAMETER prRow AS ROWID NO-UNDO.
+  DEFINE OUTPUT PARAMETER plOk  AS LOGICAL NO-UNDO INITIAL YES.
+  DEFINE BUFFER bInvoice FOR Invoice.
+  FIND bInvoice WHERE ROWID(bInvoice) = prRow NO-LOCK NO-ERROR.
+  IF NOT AVAILABLE bInvoice THEN DO:
+    plOk = NO.
+    RETURN.
+  END.
+  CASE TRUE:
+    WHEN bInvoice.TotalPaid < 0 THEN plOk = NO.
+    WHEN bInvoice.TotalPaid > 50000 THEN DO:
+      RUN shared/log_msg.p (INPUT "WARN", INPUT "Invoice.TotalPaid above threshold").
+      plOk = NO.
+    END.
+    OTHERWISE plOk = YES.
+  END CASE.
+END PROCEDURE.
+
+PROCEDURE map-invoice-amount1 :
+  DEFINE INPUT  PARAMETER prRow AS ROWID NO-UNDO.
+  DEFINE OUTPUT PARAMETER plOk  AS LOGICAL NO-UNDO INITIAL YES.
+  DEFINE BUFFER bInvoice FOR Invoice.
+  FIND bInvoice WHERE ROWID(bInvoice) = prRow NO-LOCK NO-ERROR.
+  IF NOT AVAILABLE bInvoice THEN DO:
+    plOk = NO.
+    RETURN.
+  END.
+  CASE TRUE:
+    WHEN bInvoice.Amount < 0 THEN plOk = NO.
+    WHEN bInvoice.Amount > 9999999 THEN DO:
+      RUN shared/log_msg.p (INPUT "WARN", INPUT "Invoice.Amount above threshold").
+      plOk = NO.
+    END.
+    OTHERWISE plOk = YES.
+  END CASE.
+END PROCEDURE.
+
+PROCEDURE calc-invoice-amount2 :
+  DEFINE INPUT  PARAMETER prRow AS ROWID NO-UNDO.
+  DEFINE OUTPUT PARAMETER plOk  AS LOGICAL NO-UNDO INITIAL YES.
+  DEFINE BUFFER bInvoice FOR Invoice.
+  FIND bInvoice WHERE ROWID(bInvoice) = prRow NO-LOCK NO-ERROR.
+  IF NOT AVAILABLE bInvoice THEN DO:
+    plOk = NO.
+    RETURN.
+  END.
+  CASE TRUE:
+    WHEN bInvoice.Amount < 0 THEN plOk = NO.
+    WHEN bInvoice.Amount > 100000 THEN DO:
+      RUN shared/log_msg.p (INPUT "WARN", INPUT "Invoice.Amount above threshold").
+      plOk = NO.
+    END.
+    OTHERWISE plOk = YES.
+  END CASE.
+END PROCEDURE.
+
+PROCEDURE round-invoice-totalpaid3 :
+  DEFINE INPUT  PARAMETER prRow AS ROWID NO-UNDO.
+  DEFINE OUTPUT PARAMETER plOk  AS LOGICAL NO-UNDO INITIAL YES.
+  DEFINE BUFFER bInvoice FOR Invoice.
+  FIND bInvoice WHERE ROWID(bInvoice) = prRow NO-LOCK NO-ERROR.
+  IF NOT AVAILABLE bInvoice THEN DO:
+    plOk = NO.
+    RETURN.
+  END.
+  CASE TRUE:
+    WHEN bInvoice.TotalPaid < 0 THEN plOk = NO.
+    WHEN bInvoice.TotalPaid > 999999 THEN DO:
+      RUN shared/log_msg.p (INPUT "WARN", INPUT "Invoice.TotalPaid above threshold").
+      plOk = NO.
+    END.
+    OTHERWISE plOk = YES.
+  END CASE.
+END PROCEDURE.
+
+PROCEDURE apply-invoice-amount4 :
+  DEFINE INPUT  PARAMETER prRow AS ROWID NO-UNDO.
+  DEFINE OUTPUT PARAMETER plOk  AS LOGICAL NO-UNDO INITIAL YES.
+  DEFINE BUFFER bInvoice FOR Invoice.
+  FIND bInvoice WHERE ROWID(bInvoice) = prRow NO-LOCK NO-ERROR.
+  IF NOT AVAILABLE bInvoice THEN DO:
+    plOk = NO.
+    RETURN.
+  END.
+  CASE TRUE:
+    WHEN bInvoice.Amount < 0 THEN plOk = NO.
+    WHEN bInvoice.Amount > 50000 THEN DO:
+      RUN shared/log_msg.p (INPUT "WARN", INPUT "Invoice.Amount above threshold").
+      plOk = NO.
+    END.
+    OTHERWISE plOk = YES.
+  END CASE.
+END PROCEDURE.
+
+PROCEDURE apply-invoice-totalpaid5 :
+  DEFINE INPUT  PARAMETER prRow AS ROWID NO-UNDO.
+  DEFINE OUTPUT PARAMETER plOk  AS LOGICAL NO-UNDO INITIAL YES.
+  DEFINE BUFFER bInvoice FOR Invoice.
+  FIND bInvoice WHERE ROWID(bInvoice) = prRow NO-LOCK NO-ERROR.
+  IF NOT AVAILABLE bInvoice THEN DO:
+    plOk = NO.
+    RETURN.
+  END.
+  CASE TRUE:
+    WHEN bInvoice.TotalPaid < 0 THEN plOk = NO.
+    WHEN bInvoice.TotalPaid > 50000 THEN DO:
+      RUN shared/log_msg.p (INPUT "WARN", INPUT "Invoice.TotalPaid above threshold").
+      plOk = NO.
+    END.
+    OTHERWISE plOk = YES.
+  END CASE.
+END PROCEDURE.
+
+PROCEDURE flag-invoice-shipcharge6 :
+  DEFINE INPUT  PARAMETER prRow AS ROWID NO-UNDO.
+  DEFINE OUTPUT PARAMETER plOk  AS LOGICAL NO-UNDO INITIAL YES.
+  DEFINE BUFFER bInvoice FOR Invoice.
+  FIND bInvoice WHERE ROWID(bInvoice) = prRow NO-LOCK NO-ERROR.
+  IF NOT AVAILABLE bInvoice THEN DO:
+    plOk = NO.
+    RETURN.
+  END.
+  CASE TRUE:
+    WHEN bInvoice.ShipCharge < 0 THEN plOk = NO.
+    WHEN bInvoice.ShipCharge > 999999 THEN DO:
+      RUN shared/log_msg.p (INPUT "WARN", INPUT "Invoice.ShipCharge above threshold").
+      plOk = NO.
+    END.
+    OTHERWISE plOk = YES.
+  END CASE.
+END PROCEDURE.
+
+PROCEDURE flag-invoice-adjustment7 :
+  DEFINE INPUT  PARAMETER prRow AS ROWID NO-UNDO.
+  DEFINE OUTPUT PARAMETER plOk  AS LOGICAL NO-UNDO INITIAL YES.
+  DEFINE BUFFER bInvoice FOR Invoice.
+  FIND bInvoice WHERE ROWID(bInvoice) = prRow NO-LOCK NO-ERROR.
+  IF NOT AVAILABLE bInvoice THEN DO:
+    plOk = NO.
+    RETURN.
+  END.
+  CASE TRUE:
+    WHEN bInvoice.Adjustment < 0 THEN plOk = NO.
+    WHEN bInvoice.Adjustment > 100000 THEN DO:
+      RUN shared/log_msg.p (INPUT "WARN", INPUT "Invoice.Adjustment above threshold").
+      plOk = NO.
+    END.
+    OTHERWISE plOk = YES.
+  END CASE.
+END PROCEDURE.
+
