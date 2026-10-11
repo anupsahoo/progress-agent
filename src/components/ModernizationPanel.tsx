@@ -3,7 +3,8 @@ import {
   BadgeCheck, Check, ExternalLink, FileCode2, FlaskConical, GitPullRequest, Github, Maximize2,
   PanelRightClose, PanelRightOpen, Scale, Sparkles,
 } from 'lucide-react';
-import { PROGRAMS, LIFECYCLE, PULLS_URL, REPO_URL, type ProgramId } from '../data/modernization';
+import { PROGRAMS, LIFECYCLE, PULLS_URL, REPO_URL, ablSourceUrl, type ProgramId } from '../data/modernization';
+import { CompareSplit, LegacyStage, ModeToggle, useCompareMode, type MapInfo } from './Compare';
 import { Modal, PageHeader } from './ui';
 
 const STORAGE_KEY = 'sports2000.mp-open';
@@ -16,8 +17,15 @@ function initialOpen() {
   return typeof window !== 'undefined' ? window.innerWidth >= 1360 : true;
 }
 
-/** Page layout for every modernized screen: header, content and the provenance panel. */
-export function ModernizedLayout({ program, title, subtitle, crumbs, actions, legacyScreen, children }: {
+export interface CompareSpec {
+  /** Renders the legacy terminal from the screen's live state. */
+  legacy: (opts: { big: boolean }) => React.ReactNode;
+  describe: (key: string) => MapInfo | undefined;
+  legacyLabel?: string;
+}
+
+/** Page layout for every modernized screen: header, compare bar, content and the provenance panel. */
+export function ModernizedLayout({ program, title, subtitle, crumbs, actions, legacyScreen, children, compare, toolbar }: {
   program: ProgramId;
   title: string;
   subtitle?: React.ReactNode;
@@ -25,12 +33,22 @@ export function ModernizedLayout({ program, title, subtitle, crumbs, actions, le
   actions?: React.ReactNode;
   legacyScreen: string;
   children: React.ReactNode;
+  compare?: CompareSpec;
+  /** Extra controls shown in the compare bar (right side). */
+  toolbar?: React.ReactNode;
 }) {
   const [open, setOpen] = useState(initialOpen);
+  const [mode, setMode] = useCompareMode();
+  const [overlay, setOverlay] = useState(false);
+  const m = compare ? mode : 'modern';
   const set = (v: boolean) => {
     setOpen(v);
     try { localStorage.setItem(STORAGE_KEY, v ? '1' : '0'); } catch { /* ignore */ }
   };
+  // In side-by-side mode the panel collapses so it never competes with the comparison.
+  const inline = open && m !== 'split';
+  const p = PROGRAMS[program];
+
   return (
     <>
       <PageHeader
@@ -40,18 +58,51 @@ export function ModernizedLayout({ program, title, subtitle, crumbs, actions, le
         actions={
           <>
             {actions}
-            {!open && (
-              <button className="mp-toggle no-print" onClick={() => set(true)}>
+            {!inline && (
+              <button className="mp-toggle no-print" onClick={() => (m === 'split' ? setOverlay(true) : set(true))}>
                 <PanelRightOpen size={17} /> How this was modernized
               </button>
             )}
           </>
         }
       />
-      <div className={`page ${open ? 'with-panel' : ''}`}>
-        <div className="stack" style={{ minWidth: 0 }}>{children}</div>
-        {open && <ModernizationPanel program={program} legacyScreen={legacyScreen} onClose={() => set(false)} />}
-      </div>
+      {compare && (
+        <div className="compare-bar no-print">
+          <ModeToggle mode={m} onChange={setMode} />
+          <div className="compare-meta">
+            <span className="cm-src"><FileCode2 size={15} /> <a href={ablSourceUrl(p.source)} target="_blank" rel="noopener noreferrer">{p.source}</a></span>
+            <span className="cm-dot" />
+            <span>{p.lines} lines of ABL</span>
+            <span className="cm-dot" />
+            <span className={p.parity.full ? 'cm-ok' : ''}>{p.parity.label}</span>
+          </div>
+          {toolbar && <div className="compare-tools">{toolbar}</div>}
+        </div>
+      )}
+      {m === 'split' && compare ? (
+        <CompareSplit legacy={compare.legacy({ big: false })} describe={compare.describe} source={p.source} legacyLabel={compare.legacyLabel}>
+          {children}
+        </CompareSplit>
+      ) : (
+        <div className={`page ${inline ? 'with-panel' : ''}`}>
+          <div className="stack" style={{ minWidth: 0 }}>
+            {m === 'legacy' && compare ? (
+              <LegacyStage hint={<>This is the original program, live: type a value and press <kbd>Enter</kbd>, <kbd>F1</kbd> for GO, <kbd>F4</kbd> to end. It shares state with the modern screen.</>}>
+                {compare.legacy({ big: true })}
+              </LegacyStage>
+            ) : children}
+          </div>
+          {inline && <ModernizationPanel program={program} legacyScreen={legacyScreen} onClose={() => set(false)} />}
+        </div>
+      )}
+      {overlay && m === 'split' && (
+        <>
+          <div className="scrim" onClick={() => setOverlay(false)} />
+          <div className="mp-overlay">
+            <ModernizationPanel program={program} legacyScreen={legacyScreen} onClose={() => setOverlay(false)} />
+          </div>
+        </>
+      )}
     </>
   );
 }
@@ -71,7 +122,7 @@ export function ModernizationPanel({ program, legacyScreen, onClose }: { program
         </div>
         <div className="mp-src">
           <FileCode2 size={15} />
-          <span className="tag">{p.source}</span>
+          <a className="tag" href={ablSourceUrl(p.source)} target="_blank" rel="noopener noreferrer">{p.source}</a>
           <span>{p.lines} lines of ABL</span>
         </div>
         <div className="chips" style={{ marginTop: 12 }}>

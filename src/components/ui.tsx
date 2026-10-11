@@ -105,7 +105,7 @@ export function utilTone(r: number): Tone {
 
 export function UtilMeter({ ratio, width = 90 }: { ratio: number; width?: number }) {
   const tone = utilTone(ratio);
-  const color = tone === 'danger' ? '#dc2626' : tone === 'warning' ? '#d97706' : '#10b981';
+  const color = tone === 'danger' ? '#dc2626' : tone === 'warning' ? '#d97706' : '#3A9A2E';
   return (
     <div className="util">
       <div className="meter" style={{ width }}>
@@ -151,8 +151,10 @@ type SortState = { key: string; dir: 'asc' | 'desc' } | null;
 
 export function DataTable<R>({
   columns, rows, rowKey, searchText, searchPlaceholder = 'Search', toolbar, pageSize = 10,
-  initialSort = null, onRowClick, selectedKey, footer, emptyText = 'No records match.', maxHeight, hideSearch,
+  initialSort = null, onRowClick, selectedKey, footer, emptyText = 'No records match.', maxHeight, hideSearch, rowMap,
 }: {
+  /** Optional data-map key per row (used by the legacy/modern compare view). */
+  rowMap?: (row: R) => string;
   columns: Column<R>[];
   rows: R[];
   rowKey: (row: R) => string | number;
@@ -243,6 +245,7 @@ export function DataTable<R>({
               return (
                 <tr
                   key={k}
+                  data-map={rowMap?.(r)}
                   className={`${onRowClick ? 'clickable' : ''} ${selectedKey === k ? 'selected' : ''}`}
                   onClick={onRowClick ? () => onRowClick(r) : undefined}
                 >

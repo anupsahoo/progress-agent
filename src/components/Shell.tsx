@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  ArrowLeftRight, BarChart3, ClipboardList, CreditCard, FileText, LayoutDashboard, Menu, Package,
+  ArrowLeftRight, BarChart3, CreditCard, FileText, LayoutDashboard, Menu, Package,
   Search, UserCog, Users,
 } from 'lucide-react';
 import { customers, orders, customerLabel } from '../data/sports';
+import { CogenSightLockup, CogenSightMark } from './Brand';
 
 interface NavItem { id: string; label: string; icon: React.ReactNode }
 
@@ -44,13 +45,14 @@ export function Shell({ children, onNavigate, currentRoute }: {
     <div className="app">
       {menuOpen && <div className="scrim" style={{ zIndex: 25 }} onClick={() => setMenuOpen(false)} />}
       <aside className={`sidebar ${menuOpen ? 'open' : ''}`}>
-        <a href="#dashboard" className="brand" onClick={(e) => { e.preventDefault(); go('dashboard'); }}>
-          <span className="brand-mark"><Logo /></span>
+        <CogenSightLockup onClick={(e) => { e.preventDefault(); go('dashboard'); }} />
+        <div className="app-name">
+          <span className="app-mark"><Logo /></span>
           <span>
             <div className="brand-name">Sports2000</div>
             <div className="brand-sub">Back office</div>
           </span>
-        </a>
+        </div>
         <nav className="nav-group" aria-label="Operations">
           <div className="nav-label">Operations</div>
           {NAV.map(item)}
@@ -86,7 +88,7 @@ export function Shell({ children, onNavigate, currentRoute }: {
 
         <footer className="footer">
           <span className="credit">
-            <ClipboardList size={15} />
+            <CogenSightMark size={18} />
             Modernized from <b>Progress OpenEdge</b> by <b>FlowPilot</b> · <b>CogenSight</b>
           </span>
           <span>Sports2000 sample data · Demo environment</span>

@@ -129,3 +129,12 @@ export const LIFECYCLE = [
   { t: 'Human gate', d: 'Reviewer approval before merge' },
   { t: 'Pull request', d: 'Change delivered with evidence attached' },
 ];
+
+/** The original ABL programs live in the FlowPilot repo under sports/. */
+export const ABL_REPO_BLOB = 'https://github.com/anupsahoo/flowpilot-ai/blob/main/';
+export function ablSourceUrl(file: string, lines?: [number, number]) {
+  const base = ABL_REPO_BLOB + file;
+  if (!lines) return base;
+  return lines[0] === lines[1] ? `${base}#L${lines[0]}` : `${base}#L${lines[0]}-L${lines[1]}`;
+}
+export const APP_SOURCE_BLOB = 'https://github.com/anupsahoo/progress-agent/blob/main/';

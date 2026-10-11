@@ -4,6 +4,8 @@ import { customers, customerById, ordersByCustomer, linesByOrder, itemById, type
 import { ModernizedLayout } from '../components/ModernizationPanel';
 import { Card, EmptyState, Field, Kpi, StatusPill } from '../components/ui';
 import { T, ablDate, fmtDate, fmtMoney } from '../theme';
+import { Terminal, TLine } from '../components/Terminal';
+import type { MapInfo } from '../components/Compare';
 
 const ablNum = (n: number) => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -12,26 +14,34 @@ function reportOrders(custNum: number): Order[] {
   return [...ordersByCustomer(custNum)].sort((a, b) => b.orderDate.localeCompare(a.orderDate));
 }
 
-function legacyScreen(custNum: number) {
+export interface ReportRow { t: string; map?: string; alert?: boolean }
+
+/** sample-order-report.p output for one customer, row by row (each row may map to a modern element). */
+export function reportRows(custNum: number): ReportRow[] {
   const c = customerById(custNum);
-  if (!c) return `┌─ Error ───────────────────────────┐\n│ Customer ${custNum} not found.${' '.repeat(Math.max(0, 14 - String(custNum).length))}│\n│              [ OK ]               │\n└───────────────────────────────────┘`;
-  const out: string[] = [`Orders for ${c.name}`, '═'.repeat(60)];
+  if (!c) return [{ t: `Customer ${custNum} not found.`, map: 'msg', alert: true }];
+  const out: ReportRow[] = [{ t: `Orders for: ${c.name}`, map: 'r-title', alert: true }, { t: '═'.repeat(60) }];
   const os = reportOrders(custNum);
-  if (os.length === 0) out.push('', '(no orders)');
+  if (os.length === 0) out.push({ t: '' }, { t: '(no orders)' });
   os.forEach((o) => {
     const lines = linesByOrder(o.orderNum);
     const total = lines.reduce((s, l) => s + l.extendedPrice, 0);
-    out.push('', 'Order#  Date      Ship Date Status', '──────  ────────  ───────── ────────────',
-      `${String(o.orderNum).padStart(6)}  ${ablDate(o.orderDate).padEnd(8)}  ${ablDate(o.shipDate).padEnd(9)} ${o.status}`, '',
-      '  Line Item                      Qty       Price       Total',
-      '  ──── ──────────────────── ──────── ─────────── ───────────');
+    out.push({ t: '' }, { t: 'Order#  Date      Ship Date Status' }, { t: '──────  ────────  ───────── ────────────' },
+      { t: `${String(o.orderNum).padStart(6)}  ${ablDate(o.orderDate).padEnd(8)}  ${ablDate(o.shipDate).padEnd(9)} ${o.status}`, map: `order-${o.orderNum}` },
+      { t: '' },
+      { t: '  Line Item                      Qty       Price       Total' },
+      { t: '  ──── ──────────────────── ──────── ─────────── ───────────' });
     lines.forEach((l) => {
       const it = itemById(l.itemNum);
-      out.push(`  ${String(l.lineNum).padStart(4)} ${(it?.name ?? '').slice(0, 20).padEnd(20)} ${String(l.qty).padStart(8)} ${ablNum(l.price).padStart(11)} ${ablNum(l.extendedPrice).padStart(11)}`);
+      out.push({ t: `  ${String(l.lineNum).padStart(4)} ${(it?.name ?? '').slice(0, 20).padEnd(20)} ${String(l.qty).padStart(8)} ${ablNum(l.price).padStart(11)} ${ablNum(l.extendedPrice).padStart(11)}`, map: `line-${o.orderNum}-${l.lineNum}` });
     });
-    out.push(`  > Order ${o.orderNum} : ${lines.length} lines, Total: ${ablNum(total)}`);
+    out.push({ t: `  > Order ${o.orderNum} : ${lines.length} lines, Total: ${ablNum(total)}`, map: `total-${o.orderNum}` });
   });
-  return out.join('\n');
+  return out;
+}
+
+function legacyScreen(custNum: number) {
+  return reportRows(custNum).map((r) => r.t).join('\n');
 }
 
 export function OrderReport({ param }: { param?: string }) {
@@ -57,6 +67,7 @@ export function OrderReport({ param }: { param?: string }) {
       subtitle="Orders for one customer, newest first, with line items, line counts and order totals."
       crumbs={['Sales', 'Order report']}
       legacyScreen={screen}
+      compare={{ legacy: ({ big }) => <ReportTerminal custNum={custNum} big={big} />, describe: (k) => describeReport(k, custNum) }}
       actions={<button className="btn" onClick={() => window.print()}><Printer size={16} /> Print</button>}
     >
       <Card>
@@ -65,7 +76,7 @@ export function OrderReport({ param }: { param?: string }) {
           <Field label="Customer number" htmlFor="or-num">
             <div className="input-icon" style={{ width: 200 }}>
               <Search size={16} />
-              <input id="or-num" className="input mono" inputMode="numeric" value={input} onChange={(e) => setInput(e.target.value.replace(/[^0-9]/g, ''))} />
+              <input id="or-num" data-map="custnum-input" className="input mono" inputMode="numeric" value={input} onChange={(e) => setInput(e.target.value.replace(/[^0-9]/g, ''))} />
             </div>
           </Field>
           <button className="btn primary" type="submit">Run report</button>
@@ -79,7 +90,7 @@ export function OrderReport({ param }: { param?: string }) {
           </Field>
         </form>
         {!customer && (
-          <div className="alert error" role="alert" style={{ marginTop: 16 }}>
+          <div className="alert error" data-map="msg" role="alert" style={{ marginTop: 16 }}>
             <CircleAlert size={18} /><span>Customer {custNum} not found.</span>
           </div>
         )}
@@ -87,7 +98,7 @@ export function OrderReport({ param }: { param?: string }) {
 
       {customer && (
         <>
-          <div className="grid-kpi" style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
+          <div className="grid-kpi" data-map="r-title" style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
             <Kpi label={`Orders for ${customer.name}`} value={os.length} foot={`Customer #${customer.custNum} · ${customer.city}`} />
             <Kpi label="Order lines" value={totals.lines} tone="success" foot="Across all orders" />
             <Kpi label="Report total" value={fmtMoney(totals.value)} tone="success" foot="Sum of extended price" />
@@ -101,7 +112,7 @@ export function OrderReport({ param }: { param?: string }) {
             const isCollapsed = collapsed.has(o.orderNum);
             return (
               <section key={o.orderNum} className="card" style={{ overflow: 'hidden' }}>
-                <button onClick={() => toggle(o.orderNum)} aria-expanded={!isCollapsed}
+                <button onClick={() => toggle(o.orderNum)} aria-expanded={!isCollapsed} data-map={`order-${o.orderNum}`}
                   style={{ all: 'unset', boxSizing: 'border-box', width: '100%', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 14, padding: '16px 20px', borderBottom: isCollapsed ? 0 : `1px solid ${T.color.border}`, flexWrap: 'wrap' }}>
                   {isCollapsed ? <ChevronRight size={18} /> : <ChevronDown size={18} />}
                   <span style={{ fontWeight: 700, fontSize: 17 }}>Order #{o.orderNum}</span>
@@ -123,26 +134,26 @@ export function OrderReport({ param }: { param?: string }) {
                         <tr>
                           <th style={{ width: 70 }}>Line</th><th>Item</th>
                           <th style={{ textAlign: 'right' }}>Qty</th><th style={{ textAlign: 'right' }}>Price</th>
-                          <th style={{ textAlign: 'right' }}>Discount</th><th style={{ textAlign: 'right' }}>Total</th>
+                          <th className="c-hide" style={{ textAlign: 'right' }}>Discount</th><th style={{ textAlign: 'right' }}>Total</th>
                         </tr>
                       </thead>
                       <tbody>
                         {lines.map((l) => {
                           const it = itemById(l.itemNum);
                           return (
-                            <tr key={l.lineNum}>
+                            <tr key={l.lineNum} data-map={`line-${o.orderNum}-${l.lineNum}`}>
                               <td className="mono muted">{l.lineNum}</td>
                               <td><div className="cell-strong">{it ? it.name : `Item #${l.itemNum}`}</div>{it && <div className="cell-sub">{it.category1} · {it.category2}</div>}</td>
                               <td className="num right">{l.qty}</td>
                               <td className="num right">{fmtMoney(l.price)}</td>
-                              <td className="num right">{l.discount ? `${l.discount}%` : <span className="muted">None</span>}</td>
+                              <td className="num right c-hide">{l.discount ? `${l.discount}%` : <span className="muted">None</span>}</td>
                               <td className="num right cell-strong">{fmtMoney(l.extendedPrice)}</td>
                             </tr>
                           );
                         })}
                       </tbody>
                       <tfoot>
-                        <tr>
+                        <tr data-map={`total-${o.orderNum}`}>
                           <td colSpan={5} style={{ textAlign: 'right' }}>Order {o.orderNum}: {lines.length} lines, total</td>
                           <td className="num right" style={{ color: T.color.brand, fontSize: 16 }}>{fmtMoney(total)}</td>
                         </tr>
@@ -157,4 +168,29 @@ export function OrderReport({ param }: { param?: string }) {
       )}
     </ModernizedLayout>
   );
+}
+
+/** sample-order-report.p rendered as a live terminal for a customer. */
+export function ReportTerminal({ custNum, big, tabs }: { custNum: number; big: boolean; tabs?: React.ReactNode }) {
+  const rows = reportRows(custNum);
+  return (
+    <Terminal program="sports/sample-order-report.p" cols={64} rows={18} maxFont={big ? 22 : 17} tabs={tabs}
+      status={`RUN sample-order-report.p (INPUT ${custNum}).`}
+      fkeys={[{ k: 'F1', label: 'GO' }, { k: 'F2', label: 'HELP' }, { k: 'F4', label: 'END-ERROR' }, { k: 'SPACE', label: 'NEXT PAGE' }]}>
+      {rows.map((r, i) => (
+        <TLine key={i} map={r.map}>{r.alert ? <span className="tb">{r.t}</span> : r.t}</TLine>
+      ))}
+    </Terminal>
+  );
+}
+
+export function describeReport(key: string, custNum: number): MapInfo | undefined {
+  const file = 'sports/sample-order-report.p';
+  if (key.startsWith('order-')) return { file, legacy: 'FOR EACH Order OF Customer NO-LOCK BY Order.OrderDate DESCENDING: DISPLAY ...', modern: '<section> per order, newest first, with a collapsible header', lines: [22, 30] };
+  if (key.startsWith('line-')) return { file, legacy: 'FOR EACH OrderLine OF Order: FIND Item ... DISPLAY OrderLine.LineNum Item.ItemName Qty Price ExtendedPrice', modern: '<tr> in the line-item table, item name joined from Item', lines: [35, 45] };
+  if (key.startsWith('total-')) return { file, legacy: 'MESSAGE "Order" Order.OrderNum ":" iLineCount "lines, Total:" STRING(dOrderTotal, "->>>,>>9.99")', modern: '<tfoot> row: line count and order total', note: 'ASSIGN accumulators become a reduce() over the lines.', lines: [47, 54] };
+  if (key === 'r-title') return { file, legacy: 'MESSAGE "Orders for:" Customer.Name VIEW-AS ALERT-BOX.', modern: 'KPI tiles: orders, lines and report total', lines: [20, 20] };
+  if (key === 'msg') return { file, legacy: `MESSAGE "Customer" piCustNum "not found." VIEW-AS ALERT-BOX ERROR.`, modern: `<div role="alert">Customer ${custNum} not found.</div>`, lines: [14, 18] };
+  if (key === 'custnum-input') return { file, legacy: 'DEFINE INPUT PARAMETER piCustNum AS INTEGER NO-UNDO.', modern: 'Customer number input + Run report', lines: [7, 7] };
+  return undefined;
 }
