@@ -1,0 +1,57 @@
+{
+  "PurchaseOrder": [
+    {
+      "PONum": 8001,
+      "DateEntered": "1998-05-05",
+      "SupplierIDNum": 1,
+      "ReceiveDate": "1998-07-29",
+      "POStatus": "Received"
+    },
+    {
+      "PONum": 8002,
+      "DateEntered": "1998-05-01",
+      "SupplierIDNum": 2,
+      "ReceiveDate": null,
+      "POStatus": "Ordered"
+    },
+    {
+      "PONum": 8003,
+      "DateEntered": "1998-04-28",
+      "SupplierIDNum": 3,
+      "ReceiveDate": null,
+      "POStatus": "Ordered"
+    }
+  ],
+  "POLine": [
+    {
+      "Linenum": 1,
+      "Itemnum": 3,
+      "Price": 16.55,
+      "Qty": 3,
+      "Discount": 0,
+      "ExtendedPrice": 49.65,
+      "PONum": 8001,
+      "POLineStatus": "Received"
+    },
+    {
+      "Linenum": 2,
+      "Itemnum": 45,
+      "Price": 81,
+      "Qty": 5,
+      "Discount": 0,
+      "ExtendedPrice": 405,
+      "PONum": 8001,
+      "POLineStatus": "Received"
+    },
+    {
+      "Linenum": 3,
+      "Itemnum": 46,
+      "Price": 317,
+      "Qty": 2,
+      "Discount": 0,
+      "ExtendedPrice": 634,
+      "PONum": 8001,
+      "POLineStatus": "Received"
+    }
+  ]
+}
