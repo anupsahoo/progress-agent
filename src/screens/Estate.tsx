@@ -50,6 +50,10 @@ export function EstateHero() {
         </div>
         <div className="eh-live"><Radio size={14} /> Status from GitHub{live.checkedAt ? ` · checked ${new Date(live.checkedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : ''}
           <button onClick={() => live.refresh()} style={{ marginLeft: 10, padding: '3px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,.35)', background: 'rgba(255,255,255,.08)', color: 'inherit', cursor: 'pointer', font: 'inherit', fontWeight: 600 }}>Refresh</button>
+          <button onClick={() => live.watch()} disabled={live.watching} style={{ marginLeft: 8, padding: '3px 10px', borderRadius: 8, border: 'none', background: live.watching ? 'rgba(95,211,75,.25)' : 'linear-gradient(135deg,#3A9A2E,#1F4E9E)', color: '#fff', cursor: live.watching ? 'default' : 'pointer', font: 'inherit', fontWeight: 700 }}>
+            {live.watching ? 'Watching for FlowPilot…' : 'Watch for FlowPilot'}
+          </button>
+          {live.modernCount > 0 && <button onClick={() => window.dispatchEvent(new Event('pa:transform'))} style={{ marginLeft: 8, padding: '3px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,.35)', background: 'rgba(255,255,255,.08)', color: 'inherit', cursor: 'pointer', font: 'inherit', fontWeight: 600 }}>Replay transformation</button>}
         </div>
       </div>
       <Ring value={n} total={total} />
@@ -135,7 +139,7 @@ export function LegacyMainMenu({ onNavigate }: { onNavigate: (r: string) => void
   };
   return (
     <Terminal program="menu/mainmenu.p" cols={W} rows={18} maxFont={17}
-      status="Enter selection or press F4 to exit.     * = modernized"
+      status="Type a number and press Enter.     * = modernized"
       fkeys={[{ k: 'F1', label: 'GO' }, { k: 'F2', label: 'HELP' }, { k: 'F4', label: 'EXIT' }]}>
       <TLine>{' '.repeat(Math.floor((W - 34) / 2))}<span className="tb">SPORTS2000 ENTERPRISE · MAIN MENU</span></TLine>
       <TLine><span className="td">{' '.repeat(Math.floor((W - 38) / 2))}{ESTATE.platform} · {new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: '2-digit' })}</span></TLine>
@@ -146,7 +150,14 @@ export function LegacyMainMenu({ onNavigate }: { onNavigate: (r: string) => void
       ))}
       <TLine />
       <TLine>{'─'.repeat(W)}</TLine>
-      <TLine>{'   Selection: '}<span className="tf" style={{ display: 'inline-block', width: '3ch' }}>{' '}</span></TLine>
+      <TLine>{'   Selection: '}<input className="tf" aria-label="Menu selection" maxLength={2} autoFocus
+        onKeyDown={(e) => {
+          if (e.key !== 'Enter') return;
+          const n = parseInt((e.target as HTMLInputElement).value, 10);
+          const m = ESTATE.modules[n - 1];
+          if (m) onNavigate(`m/${m.id}`); else (e.target as HTMLInputElement).value = '';
+        }}
+        style={{ width: '3ch', font: 'inherit', color: 'inherit', background: 'transparent', border: 'none', outline: 'none', padding: 0 }} /></TLine>
     </Terminal>
   );
 }

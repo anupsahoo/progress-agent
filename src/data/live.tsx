@@ -33,6 +33,9 @@ interface LiveApi extends LiveState {
   modernCount: number;
   modernPrograms: number;
   refresh: () => void;
+  /** User-initiated: check every 5 seconds for 2 minutes, then stop. */
+  watch: () => void;
+  watching: boolean;
 }
 
 const Ctx = createContext<LiveApi | null>(null);
@@ -72,6 +75,20 @@ export function LiveProvider({ children, onChange }: { children: React.ReactNode
   stateRef.current = state;
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
+
+  // Bounded watch, started by a person: 5-second checks for 2 minutes, then stop.
+  const [watching, setWatching] = useState(false);
+  const watchTimer = useRef<number | null>(null);
+  const watch = () => {
+    if (watchTimer.current) window.clearInterval(watchTimer.current);
+    setWatching(true);
+    const until = Date.now() + 120_000;
+    refresh();
+    watchTimer.current = window.setInterval(() => {
+      if (Date.now() > until) { window.clearInterval(watchTimer.current!); watchTimer.current = null; setWatching(false); return; }
+      refresh();
+    }, 5000);
+  };
 
   const refresh = async () => {
     const p = params();
@@ -159,8 +176,10 @@ export function LiveProvider({ children, onChange }: { children: React.ReactNode
       modernCount: modern.length,
       modernPrograms: modern.reduce((s, m) => s + m.programs, 0),
       refresh,
+      watch,
+      watching,
     };
-  }, [state]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [state, watching]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return <Ctx.Provider value={api}>{children}</Ctx.Provider>;
 }

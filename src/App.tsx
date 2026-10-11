@@ -11,6 +11,7 @@ import { ROI } from './screens/ROI';
 import { Mapping } from './screens/Mapping';
 import { LegacyGate, ModulePage } from './screens/ModulePage';
 import { LiveProvider, useLive } from './data/live';
+import { Transformation } from './components/Transformation';
 import { moduleById, moduleForRoute } from './data/estate';
 import { useToasts } from './components/ui';
 
@@ -39,6 +40,7 @@ export default function App() {
   return (
     <LiveProvider onChange={(msg) => toasts.push(msg, <CheckCircle2 size={17} color="#5fd34b" />)}>
       <Routes />
+      <Transformation />
       {toasts.node}
     </LiveProvider>
   );

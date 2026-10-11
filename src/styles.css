@@ -734,3 +734,37 @@ h1, h2, h3, h4 { margin: 0; letter-spacing: -0.015em; }
 .prog-list li:last-child { border-bottom: 0; }
 .prog-list a { font-size: 12.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .prog-list span { color: var(--color-text-muted); white-space: nowrap; }
+
+/* ---------- Transformation overlay ---------- */
+.tx-root { position: fixed; inset: 0; z-index: 200; background: radial-gradient(1200px 700px at 50% 0%, #12304f 0%, #0b1220 70%); color: #fff; display: flex; align-items: center; justify-content: center; animation: txIn .35s ease-out; }
+.tx-close { position: absolute; top: 18px; right: 18px; width: 40px; height: 40px; border-radius: 10px; border: 1px solid rgba(255,255,255,.2); background: rgba(255,255,255,.06); color: #fff; cursor: pointer; display: grid; place-items: center; }
+.tx-legacy { text-align: center; }
+.tx-term { margin: 0; text-align: left; font-family: "JetBrains Mono", ui-monospace, monospace; color: #5fd34b; background: #050a05; border: 1px solid #1f3a1f; border-radius: 14px; padding: 28px 34px; font-size: 22px; line-height: 1.6; box-shadow: 0 0 60px rgba(95,211,75,.18), inset 0 0 40px rgba(95,211,75,.06); }
+.tx-term.small { font-size: 15px; padding: 18px 20px; }
+.tx-cursor { animation: txBlink 1s step-end infinite; }
+.tx-caption { margin-top: 26px; font-size: 26px; color: #cfe3ff; }
+.tx-stage { width: min(1180px, 92vw); text-align: center; }
+.tx-title { font-size: 34px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 26px; }
+.tx-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; perspective: 1200px; }
+.tx-tile { position: relative; height: 112px; transform-style: preserve-3d; transition: transform .6s cubic-bezier(.2,.8,.2,1); }
+.tx-tile.on { transform: rotateY(180deg); }
+.tx-face { position: absolute; inset: 0; border-radius: 14px; backface-visibility: hidden; display: flex; flex-direction: column; justify-content: center; gap: 6px; padding: 14px 16px; text-align: left; font-weight: 700; font-size: 17px; }
+.tx-face code { font-size: 13px; font-weight: 500; opacity: .85; }
+.tx-back { background: #050a05; border: 1px solid #1f3a1f; color: #5fd34b; font-family: "JetBrains Mono", ui-monospace, monospace; }
+.tx-front { transform: rotateY(180deg); background: linear-gradient(135deg, #3A9A2E 0%, #1F4E9E 100%); color: #fff; box-shadow: 0 10px 30px rgba(31,78,158,.35); }
+.tx-map { display: grid; grid-template-columns: 1fr 120px 1fr; align-items: center; gap: 0; }
+.tx-lines { width: 120px; height: 280px; }
+.tx-lines path { fill: none; stroke: #5fd34b; stroke-width: 1.6; stroke-dasharray: 200; stroke-dashoffset: 200; animation: txDraw .9s ease-out forwards; }
+.tx-form { background: #fff; color: #1d1d1f; border-radius: 16px; padding: 18px 20px; text-align: left; box-shadow: 0 20px 60px rgba(0,0,0,.35); }
+.tx-form-h { font-size: 18px; font-weight: 800; color: #1F4E9E; margin-bottom: 10px; }
+.tx-form label { display: grid; grid-template-columns: 130px 1fr; align-items: center; gap: 10px; margin: 6px 0; font-size: 14.5px; font-weight: 600; opacity: 0; animation: txUp .5s ease-out forwards; }
+.tx-form input { height: 32px; border: 1px solid #d0d7de; border-radius: 8px; padding: 0 10px; font: inherit; font-weight: 500; background: #f8fafc; color: #1d1d1f; }
+.tx-actions { display: flex; gap: 12px; justify-content: center; margin-top: 30px; flex-wrap: wrap; }
+.tx-btn { display: inline-flex; align-items: center; gap: 8px; height: 48px; padding: 0 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.06); color: #fff; font-size: 16px; font-weight: 700; cursor: pointer; }
+.tx-btn.primary { border: none; background: linear-gradient(135deg, #3A9A2E 0%, #1F4E9E 100%); }
+.tx-foot { margin-top: 22px; font-size: 14px; color: #9fb3cf; }
+@keyframes txIn { from { opacity: 0 } to { opacity: 1 } }
+@keyframes txBlink { 50% { opacity: 0 } }
+@keyframes txDraw { to { stroke-dashoffset: 0 } }
+@keyframes txUp { from { opacity: 0; transform: translateY(6px) } to { opacity: 1; transform: none } }
+@media (max-width: 900px) { .tx-grid { grid-template-columns: repeat(2, 1fr); } .tx-map { grid-template-columns: 1fr; } .tx-lines { display: none; } }
