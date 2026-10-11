@@ -48,7 +48,9 @@ export function EstateHero() {
           <span><Boxes size={16} /> {total} modules</span>
           <span><SquareTerminal size={16} /> {screens} character screens</span>
         </div>
-        <div className="eh-live"><Radio size={14} /> Live from GitHub · main + open pull requests{live.checkedAt ? ` · checked ${new Date(live.checkedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}` : ''}</div>
+        <div className="eh-live"><Radio size={14} /> Status from GitHub{live.checkedAt ? ` · checked ${new Date(live.checkedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : ''}
+          <button onClick={() => live.refresh()} style={{ marginLeft: 10, padding: '3px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,.35)', background: 'rgba(255,255,255,.08)', color: 'inherit', cursor: 'pointer', font: 'inherit', fontWeight: 600 }}>Refresh</button>
+        </div>
       </div>
       <Ring value={n} total={total} />
     </section>

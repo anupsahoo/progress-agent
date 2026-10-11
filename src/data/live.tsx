@@ -12,7 +12,6 @@ const REPO = 'anupsahoo/progress-agent';
 const MANIFEST_URL = `https://api.github.com/repos/${REPO}/contents/modernization.json?ref=main`;
 const MODERNIZED_DIR_URL = `https://api.github.com/repos/${REPO}/contents/modernized?ref=main`;
 const PULLS_URL = `https://api.github.com/repos/${REPO}/pulls?state=open&per_page=100`;
-const POLL_MS = 20000;
 const BRANCH_PREFIX = 'flowpilot/estate/';
 
 export interface PullInfo { number: number; url: string; title: string; branch: string; updatedAt: string }
@@ -141,11 +140,13 @@ export function LiveProvider({ children, onChange }: { children: React.ReactNode
   };
 
   useEffect(() => {
+    // No timer: check once on load and whenever the tab comes back into view
+    // (e.g. after switching from FlowPilot). A Refresh button calls refresh().
     refresh();
-    const t = setInterval(refresh, POLL_MS);
     const vis = () => { if (document.visibilityState === 'visible') refresh(); };
     document.addEventListener('visibilitychange', vis);
-    return () => { clearInterval(t); document.removeEventListener('visibilitychange', vis); };
+    window.addEventListener('focus', vis);
+    return () => { document.removeEventListener('visibilitychange', vis); window.removeEventListener('focus', vis); };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const api = useMemo<LiveApi>(() => {
