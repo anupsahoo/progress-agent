@@ -1,0 +1,16 @@
+# sec-060-warehouse-a05-headers: Warehouse: A05 Security misconfiguration
+id: sec-060-warehouse-a05-headers
+title: "Warehouse: A05 Security misconfiguration"
+module: warehousing
+table: Warehouse
+owasp: "A05:2021 Security Misconfiguration"
+cwe: CWE-16
+severity: medium
+target:
+  method: GET
+  path: "/api/warehousing/warehouses"
+payloads:
+  []
+expected: "X-Content-Type-Options nosniff, no Server version banner, CORS limited to the app origin"
+legacy_reference: legacy/warehousing/si_warehouse.p
+automated_by: zap-baseline + custom request runner

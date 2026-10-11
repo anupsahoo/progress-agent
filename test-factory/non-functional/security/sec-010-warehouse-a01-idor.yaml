@@ -1,0 +1,16 @@
+# sec-010-warehouse-a01-idor: Warehouse: A01 Broken access control (IDOR)
+id: sec-010-warehouse-a01-idor
+title: "Warehouse: A01 Broken access control (IDOR)"
+module: warehousing
+table: Warehouse
+owasp: "A01:2021 Broken Access Control"
+cwe: CWE-639
+severity: high
+target:
+  method: GET
+  path: "/api/warehousing/warehouses/1"
+payloads:
+  - "token of a user without the Warehousing role"
+expected: "403 for users outside the module role; never another tenant's record"
+legacy_reference: legacy/warehousing/si_warehouse.p
+automated_by: zap-baseline + custom request runner

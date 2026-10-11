@@ -1,0 +1,16 @@
+# sec-069-bill-to-a05-headers: BillTo: A05 Security misconfiguration
+id: sec-069-bill-to-a05-headers
+title: "BillTo: A05 Security misconfiguration"
+module: billing-invoicing
+table: BillTo
+owasp: "A05:2021 Security Misconfiguration"
+cwe: CWE-16
+severity: medium
+target:
+  method: GET
+  path: "/api/billing-invoicing/bill-tos"
+payloads:
+  []
+expected: "X-Content-Type-Options nosniff, no Server version banner, CORS limited to the app origin"
+legacy_reference: legacy/billing-invoicing/si_bill_to.p
+automated_by: zap-baseline + custom request runner

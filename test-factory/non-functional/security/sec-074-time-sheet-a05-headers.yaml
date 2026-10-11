@@ -1,0 +1,16 @@
+# sec-074-time-sheet-a05-headers: TimeSheet: A05 Security misconfiguration
+id: sec-074-time-sheet-a05-headers
+title: "TimeSheet: A05 Security misconfiguration"
+module: hr-payroll
+table: TimeSheet
+owasp: "A05:2021 Security Misconfiguration"
+cwe: CWE-16
+severity: medium
+target:
+  method: GET
+  path: "/api/hr-payroll/time-sheets"
+payloads:
+  []
+expected: "X-Content-Type-Options nosniff, no Server version banner, CORS limited to the app origin"
+legacy_reference: legacy/hr-payroll/si_time_sheet.p
+automated_by: zap-baseline + custom request runner

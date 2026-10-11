@@ -1,0 +1,19 @@
+# sec-049-time-sheet-a03-injection: TimeSheet: A03 Injection in search
+id: sec-049-time-sheet-a03-injection
+title: "TimeSheet: A03 Injection in search"
+module: hr-payroll
+table: TimeSheet
+owasp: "A03:2021 Injection"
+cwe: CWE-89
+severity: high
+target:
+  method: GET
+  path: "/api/hr-payroll/time-sheets?q="
+payloads:
+  - "' OR '1'='1"
+  - "\"; DROP TABLE TimeSheet; --"
+  - "${jndi:ldap://x}"
+  - "<script>alert(1)</script>"
+expected: "200 with an empty or filtered page; TypeRecorded search is parameterised; no stack trace"
+legacy_reference: legacy/hr-payroll/si_time_sheet.p
+automated_by: zap-baseline + custom request runner

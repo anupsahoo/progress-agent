@@ -1,0 +1,16 @@
+# sec-055-local-default-a05-headers: LocalDefault: A05 Security misconfiguration
+id: sec-055-local-default-a05-headers
+title: "LocalDefault: A05 Security misconfiguration"
+module: sales-territories
+table: LocalDefault
+owasp: "A05:2021 Security Misconfiguration"
+cwe: CWE-16
+severity: medium
+target:
+  method: GET
+  path: "/api/sales-territories/local-defaults"
+payloads:
+  []
+expected: "X-Content-Type-Options nosniff, no Server version banner, CORS limited to the app origin"
+legacy_reference: legacy/sales-territories/si_local_default.p
+automated_by: zap-baseline + custom request runner
