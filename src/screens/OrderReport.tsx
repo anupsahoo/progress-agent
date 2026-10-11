@@ -1,150 +1,160 @@
-import React, { useState } from 'react';
-import { C, PageHeader, BeforeAfter } from '../components/Shell';
-import { customers, ordersByCustomer, linesByOrder, itemById, customerById } from '../data/sports';
+import React, { useMemo, useState } from 'react';
+import { ChevronDown, ChevronRight, CircleAlert, Printer, Search } from 'lucide-react';
+import { customers, customerById, ordersByCustomer, linesByOrder, itemById, type Order } from '../data/sports';
+import { ModernizedLayout } from '../components/ModernizationPanel';
+import { Card, EmptyState, Field, Kpi, StatusPill } from '../components/ui';
+import { T, ablDate, fmtDate, fmtMoney } from '../theme';
 
-const PROGRESS_SCREEN = `Order Report for Customer : Hoops (3)
-════════════════════════════════════════════════════════════
+const ablNum = (n: number) => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-Order #3   Date: 09/23/1997   Ship: 09/28/1997   Status: Shipped
-────────────────────────────────────────────────────────────
-  Line  Item             Qty    Price    Extended
-  ────  ────────────   ─────   ──────   ──────────
-    1   Fins                4   24.00       96.00
-    2   Tennis Racquet      2  119.50      227.05
-    3   Cycle Helmet        6   75.00      450.00
-                                         ──────────
-                            Subtotal      773.05
-                            Lines: 3`;
+/** R3: FOR EACH Order OF Customer BY Order.OrderDate DESCENDING */
+function reportOrders(custNum: number): Order[] {
+  return [...ordersByCustomer(custNum)].sort((a, b) => b.orderDate.localeCompare(a.orderDate));
+}
 
-export function OrderReport() {
-  const [custId, setCustId] = useState(3);
-  const customer = customerById(custId);
-  const custOrders = ordersByCustomer(custId);
+function legacyScreen(custNum: number) {
+  const c = customerById(custNum);
+  if (!c) return `┌─ Error ───────────────────────────┐\n│ Customer ${custNum} not found.${' '.repeat(Math.max(0, 14 - String(custNum).length))}│\n│              [ OK ]               │\n└───────────────────────────────────┘`;
+  const out: string[] = [`Orders for ${c.name}`, '═'.repeat(60)];
+  const os = reportOrders(custNum);
+  if (os.length === 0) out.push('', '(no orders)');
+  os.forEach((o) => {
+    const lines = linesByOrder(o.orderNum);
+    const total = lines.reduce((s, l) => s + l.extendedPrice, 0);
+    out.push('', 'Order#  Date      Ship Date Status', '──────  ────────  ───────── ────────────',
+      `${String(o.orderNum).padStart(6)}  ${ablDate(o.orderDate).padEnd(8)}  ${ablDate(o.shipDate).padEnd(9)} ${o.status}`, '',
+      '  Line Item                      Qty       Price       Total',
+      '  ──── ──────────────────── ──────── ─────────── ───────────');
+    lines.forEach((l) => {
+      const it = itemById(l.itemNum);
+      out.push(`  ${String(l.lineNum).padStart(4)} ${(it?.name ?? '').slice(0, 20).padEnd(20)} ${String(l.qty).padStart(8)} ${ablNum(l.price).padStart(11)} ${ablNum(l.extendedPrice).padStart(11)}`);
+    });
+    out.push(`  > Order ${o.orderNum} : ${lines.length} lines, Total: ${ablNum(total)}`);
+  });
+  return out.join('\n');
+}
+
+export function OrderReport({ param }: { param?: string }) {
+  const [input, setInput] = useState(param || '1');
+  const [custNum, setCustNum] = useState<number>(param ? parseInt(param, 10) || 0 : 1);
+  const [collapsed, setCollapsed] = useState<Set<number>>(new Set());
+
+  const customer = customerById(custNum);
+  const os = useMemo(() => reportOrders(custNum), [custNum]);
+  const totals = useMemo(() => {
+    let lines = 0, value = 0;
+    os.forEach((o) => linesByOrder(o.orderNum).forEach((l) => { lines++; value += l.extendedPrice; }));
+    return { lines, value };
+  }, [os]);
+  const screen = useMemo(() => legacyScreen(custNum), [custNum]);
+
+  const toggle = (n: number) => setCollapsed((s) => { const x = new Set(s); x.has(n) ? x.delete(n) : x.add(n); return x; });
 
   return (
-    <div>
-      <PageHeader
-        title="Order Details Report"
-        subtitle="Full order breakdown with line items for a customer. Originally a text report printed per order; now an interactive drill-down with subtotals and item lookups."
-        source="sports/sample-order-report.p"
-      />
-
-      <BeforeAfter beforeContent={PROGRESS_SCREEN}>
-        <div style={{ marginBottom: 20 }}>
-          <div style={{ fontSize: 10, fontWeight: 700, color: C.t3, fontFamily: C.mono, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>
-            Customer
-          </div>
-          <select
-            value={custId}
-            onChange={e => setCustId(parseInt(e.target.value))}
-            style={{
-              width: '100%', padding: '9px 12px', borderRadius: 6,
-              border: `1px solid ${C.bdr}`, fontSize: 14, fontFamily: C.sans,
-              background: 'white', cursor: 'pointer',
-            }}
-          >
-            {customers.map(c => (
-              <option key={c.custNum} value={c.custNum}>
-                #{c.custNum} — {c.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {customer && custOrders.length === 0 && (
-          <div style={{ padding: 30, textAlign: 'center', color: C.t3, border: `1px dashed ${C.bdr}`, borderRadius: 8 }}>
-            No orders for {customer.name}.
+    <ModernizedLayout
+      program="order_report"
+      title="Order report"
+      subtitle="Orders for one customer, newest first, with line items, line counts and order totals."
+      crumbs={['Sales', 'Order report']}
+      legacyScreen={screen}
+      actions={<button className="btn" onClick={() => window.print()}><Printer size={16} /> Print</button>}
+    >
+      <Card>
+        <form className="row" style={{ alignItems: 'flex-end', gap: 14, flexWrap: 'wrap' }}
+          onSubmit={(e) => { e.preventDefault(); setCustNum(parseInt(input, 10) || 0); setCollapsed(new Set()); }}>
+          <Field label="Customer number" htmlFor="or-num">
+            <div className="input-icon" style={{ width: 200 }}>
+              <Search size={16} />
+              <input id="or-num" className="input mono" inputMode="numeric" value={input} onChange={(e) => setInput(e.target.value.replace(/[^0-9]/g, ''))} />
+            </div>
+          </Field>
+          <button className="btn primary" type="submit">Run report</button>
+          <span className="muted" style={{ margin: '0 4px 10px' }}>or</span>
+          <Field label="Choose a customer" htmlFor="or-pick">
+            <select id="or-pick" className="select" style={{ minWidth: 260 }} value={customer ? custNum : ''}
+              onChange={(e) => { setInput(e.target.value); setCustNum(parseInt(e.target.value, 10)); setCollapsed(new Set()); }}>
+              {!customer && <option value="">Select a customer</option>}
+              {customers.map((c) => <option key={c.custNum} value={c.custNum}>#{c.custNum} · {c.name}</option>)}
+            </select>
+          </Field>
+        </form>
+        {!customer && (
+          <div className="alert error" role="alert" style={{ marginTop: 16 }}>
+            <CircleAlert size={18} /><span>Customer {custNum} not found.</span>
           </div>
         )}
+      </Card>
 
-        {customer && custOrders.length > 0 && (
-          <>
-            <div style={{ fontSize: 15, fontWeight: 700, color: C.t1, marginBottom: 4 }}>
-              {customer.name}
-            </div>
-            <div style={{ fontSize: 12, color: C.t3, marginBottom: 20 }}>
-              {custOrders.length} order{custOrders.length !== 1 ? 's' : ''} on file
-            </div>
+      {customer && (
+        <>
+          <div className="grid-kpi" style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
+            <Kpi label={`Orders for ${customer.name}`} value={os.length} foot={`Customer #${customer.custNum} · ${customer.city}`} />
+            <Kpi label="Order lines" value={totals.lines} tone="success" foot="Across all orders" />
+            <Kpi label="Report total" value={fmtMoney(totals.value)} tone="success" foot="Sum of extended price" />
+          </div>
 
-            {custOrders.map(order => {
-              const lines = linesByOrder(order.orderNum);
-              const subtotal = lines.reduce((s, l) => s + l.extendedPrice, 0);
-              return (
-                <div key={order.orderNum} style={{
-                  marginBottom: 20,
-                  background: 'white',
-                  border: `1px solid ${C.bdr}`,
-                  borderRadius: 8,
-                  overflow: 'hidden',
-                }}>
-                  <div style={{
-                    padding: '10px 14px',
-                    background: `linear-gradient(90deg, ${C.indUL} 0%, transparent 100%)`,
-                    borderBottom: `1px solid ${C.bdr}`,
-                    display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap',
-                  }}>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: C.ind, fontFamily: C.mono }}>
-                      Order #{order.orderNum}
-                    </div>
-                    <div style={{ fontSize: 12, color: C.t3 }}>
-                      Placed {order.orderDate} · Shipped {order.shipDate || '—'}
-                    </div>
-                    <div style={{ marginLeft: 'auto', fontSize: 10, padding: '2px 10px', borderRadius: 20, background: C.green + '18', color: C.green, fontFamily: C.mono, fontWeight: 700, textTransform: 'uppercase' }}>
-                      {order.status}
-                    </div>
-                  </div>
-                  {lines.length === 0 ? (
-                    <div style={{ padding: 16, fontSize: 12, color: C.t3, fontStyle: 'italic' }}>No line items.</div>
-                  ) : (
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+          {os.length === 0 && <Card><EmptyState title={`No orders for ${customer.name}.`} /></Card>}
+
+          {os.map((o) => {
+            const lines = linesByOrder(o.orderNum);
+            const total = lines.reduce((s, l) => s + l.extendedPrice, 0);
+            const isCollapsed = collapsed.has(o.orderNum);
+            return (
+              <section key={o.orderNum} className="card" style={{ overflow: 'hidden' }}>
+                <button onClick={() => toggle(o.orderNum)} aria-expanded={!isCollapsed}
+                  style={{ all: 'unset', boxSizing: 'border-box', width: '100%', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 14, padding: '16px 20px', borderBottom: isCollapsed ? 0 : `1px solid ${T.color.border}`, flexWrap: 'wrap' }}>
+                  {isCollapsed ? <ChevronRight size={18} /> : <ChevronDown size={18} />}
+                  <span style={{ fontWeight: 700, fontSize: 17 }}>Order #{o.orderNum}</span>
+                  <StatusPill status={o.status} />
+                  <span className="muted num" style={{ fontSize: 14 }}>
+                    Placed {fmtDate(o.orderDate)} · {o.shipDate ? `Shipped ${fmtDate(o.shipDate)}` : 'Not shipped'}
+                  </span>
+                  <span style={{ marginLeft: 'auto', textAlign: 'right' }}>
+                    <span className="muted" style={{ fontSize: 13.5, marginRight: 10 }}>{lines.length} {lines.length === 1 ? 'line' : 'lines'}</span>
+                    <span className="num" style={{ fontWeight: 700, fontSize: 16.5 }}>{fmtMoney(total)}</span>
+                  </span>
+                </button>
+                {!isCollapsed && (lines.length === 0 ? (
+                  <div className="muted" style={{ padding: '16px 20px', fontSize: 14.5 }}>No line items on this order. Total {fmtMoney(0)}.</div>
+                ) : (
+                  <div className="table-wrap">
+                    <table className="table">
                       <thead>
                         <tr>
-                          {['#', 'Item', 'Category', 'Qty', 'Price', 'Disc', 'Extended', 'Status'].map(h => (
-                            <th key={h} style={{
-                              padding: '9px 12px', textAlign: 'left',
-                              background: '#f8fafc', borderBottom: `1px solid ${C.bdr}`,
-                              fontSize: 10, fontWeight: 700, fontFamily: C.mono,
-                              textTransform: 'uppercase', letterSpacing: '0.05em', color: C.t3,
-                            }}>{h}</th>
-                          ))}
+                          <th style={{ width: 70 }}>Line</th><th>Item</th>
+                          <th style={{ textAlign: 'right' }}>Qty</th><th style={{ textAlign: 'right' }}>Price</th>
+                          <th style={{ textAlign: 'right' }}>Discount</th><th style={{ textAlign: 'right' }}>Total</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {lines.map(l => {
-                          const item = itemById(l.itemNum);
+                        {lines.map((l) => {
+                          const it = itemById(l.itemNum);
                           return (
-                            <tr key={l.lineNum} style={{ borderTop: `1px solid ${C.bdr}` }}>
-                              <td style={{ padding: '9px 12px', fontFamily: C.mono, color: C.t3 }}>{l.lineNum}</td>
-                              <td style={{ padding: '9px 12px', fontWeight: 600 }}>{item ? item.name : `Item #${l.itemNum}`}</td>
-                              <td style={{ padding: '9px 12px', color: C.t2, fontSize: 12 }}>{item ? `${item.category1} / ${item.category2}` : '—'}</td>
-                              <td style={{ padding: '9px 12px', fontFamily: C.mono, textAlign: 'right' }}>{l.qty}</td>
-                              <td style={{ padding: '9px 12px', fontFamily: C.mono, textAlign: 'right' }}>${l.price.toFixed(2)}</td>
-                              <td style={{ padding: '9px 12px', fontFamily: C.mono, textAlign: 'right', color: C.amber }}>{l.discount}%</td>
-                              <td style={{ padding: '9px 12px', fontFamily: C.mono, textAlign: 'right', fontWeight: 700 }}>${l.extendedPrice.toFixed(2)}</td>
-                              <td style={{ padding: '9px 12px' }}>
-                                <span style={{ fontSize: 10, padding: '1px 8px', borderRadius: 12, background: C.green + '14', color: C.green, fontFamily: C.mono, fontWeight: 700 }}>{l.status}</span>
-                              </td>
+                            <tr key={l.lineNum}>
+                              <td className="mono muted">{l.lineNum}</td>
+                              <td><div className="cell-strong">{it ? it.name : `Item #${l.itemNum}`}</div>{it && <div className="cell-sub">{it.category1} · {it.category2}</div>}</td>
+                              <td className="num right">{l.qty}</td>
+                              <td className="num right">{fmtMoney(l.price)}</td>
+                              <td className="num right">{l.discount ? `${l.discount}%` : <span className="muted">None</span>}</td>
+                              <td className="num right cell-strong">{fmtMoney(l.extendedPrice)}</td>
                             </tr>
                           );
                         })}
-                        <tr style={{ background: '#f8fafc' }}>
-                          <td colSpan={6} style={{ padding: '9px 12px', textAlign: 'right', fontSize: 11, fontWeight: 700, color: C.t3, fontFamily: C.mono, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                            Subtotal · {lines.length} lines
-                          </td>
-                          <td style={{ padding: '9px 12px', textAlign: 'right', fontWeight: 800, fontSize: 15, color: C.ind, fontFamily: C.mono }}>
-                            ${subtotal.toFixed(2)}
-                          </td>
-                          <td />
-                        </tr>
                       </tbody>
+                      <tfoot>
+                        <tr>
+                          <td colSpan={5} style={{ textAlign: 'right' }}>Order {o.orderNum}: {lines.length} lines, total</td>
+                          <td className="num right" style={{ color: T.color.brand, fontSize: 16 }}>{fmtMoney(total)}</td>
+                        </tr>
+                      </tfoot>
                     </table>
-                  )}
-                </div>
-              );
-            })}
-          </>
-        )}
-      </BeforeAfter>
-    </div>
+                  </div>
+                ))}
+              </section>
+            );
+          })}
+        </>
+      )}
+    </ModernizedLayout>
   );
 }

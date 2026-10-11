@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
-import { C, PageHeader } from '../components/Shell';
+import React, { useMemo, useState } from 'react';
+import { ArrowRight, Search } from 'lucide-react';
+import { PageHeader, EmptyState } from '../components/ui';
+import { T } from '../theme';
 
 /**
- * ABL → Modern stack reference. Shows that we deeply understand Progress
- * — not just running an LLM on it. This is what a product company wants
- * to see in a partner.
+ * ABL to modern stack reference: the translation layer FlowPilot applies
+ * when it reads a .p program.
  */
 
 interface Mapping {
@@ -23,7 +24,7 @@ const MAPPINGS: Mapping[] = [
     abl: 'FOR EACH Customer NO-LOCK',
     ablDescription: 'Iterate over a table without locking',
     modern: "useEffect(() => { fetch('/api/customers').then(r => r.json()).then(setCustomers); }, []);",
-    modernDescription: 'React useEffect + fetch — async, non-blocking',
+    modernDescription: 'React useEffect + fetch, async and non-blocking',
   },
   {
     category: 'Data Access',
@@ -47,7 +48,7 @@ const MAPPINGS: Mapping[] = [
     ablDescription: 'Block other users until UPDATE commits',
     modern: 'Optimistic locking with ETag / If-Match header',
     modernDescription: 'API returns 412 Precondition Failed if record changed since read',
-    notes: 'Eliminates lock-wait timeouts (the #1 Progress production incident).',
+    notes: 'Removes lock-wait timeouts, a common source of production incidents in ABL systems.',
   },
   {
     category: 'Locking',
@@ -100,7 +101,7 @@ const MAPPINGS: Mapping[] = [
     abl: 'OUTPUT TO PRINTER.\nFOR EACH Customer NO-LOCK BREAK BY State:\n  DISPLAY ...',
     ablDescription: 'Print a grouped report',
     modern: 'React table with group-by + Print to PDF',
-    modernDescription: 'window.print() + CSS @page rules — printable + downloadable',
+    modernDescription: 'window.print() with CSS @page rules, printable and downloadable',
   },
   {
     category: 'Reports',
@@ -123,7 +124,7 @@ const MAPPINGS: Mapping[] = [
     abl: 'INCLUDE common-defs.i',
     ablDescription: 'Include file with shared definitions',
     modern: 'TypeScript types/interfaces in shared module',
-    modernDescription: 'export type Customer = { ... } — imported wherever needed',
+    modernDescription: 'export type Customer = { ... }, imported wherever needed',
   },
   {
     category: 'Programs',
@@ -166,157 +167,63 @@ const MAPPINGS: Mapping[] = [
   },
 ];
 
-const CATEGORIES = Array.from(new Set(MAPPINGS.map(m => m.category)));
-const CATEGORY_COLORS: Record<string, string> = {
-  'Data Access': '#3b5bdb',
-  'Locking': '#ef4444',
-  'UI': '#7c7cf0',
-  'Reports': '#f59e0b',
-  'Programs': '#10b981',
-  'Schema': '#0ea5e9',
-  'Errors': '#dc2626',
-};
+const CATEGORIES = Array.from(new Set(MAPPINGS.map((m) => m.category)));
 
 export function Mapping() {
   const [filter, setFilter] = useState<string>('all');
-  const filtered = filter === 'all' ? MAPPINGS : MAPPINGS.filter(m => m.category === filter);
+  const [q, setQ] = useState('');
+  const filtered = useMemo(() => {
+    const s = q.trim().toLowerCase();
+    return MAPPINGS.filter((m) => (filter === 'all' || m.category === filter)
+      && (!s || `${m.abl} ${m.ablDescription} ${m.modern} ${m.modernDescription}`.toLowerCase().includes(s)));
+  }, [filter, q]);
 
   return (
-    <div>
+    <>
       <PageHeader
-        title="ABL → Modern Stack Reference"
-        subtitle="Every Progress OpenEdge ABL construct mapped to its modern equivalent. This is the translation layer FlowPilot AI applies during modernization."
+        title="Legacy ↔ modern mapping"
+        crumbs={['Modernization', 'Mapping']}
+        subtitle="How each Progress OpenEdge ABL construct is translated into the modern stack. FlowPilot applies these mappings when it reads a program, and every translation is visible in the pull request."
       />
 
-      {/* Filter chips */}
-      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 24 }}>
-        <FilterChip label="All" value="all" current={filter} count={MAPPINGS.length} onClick={setFilter} color={C.t2} />
-        {CATEGORIES.map(cat => (
-          <FilterChip
-            key={cat}
-            label={cat}
-            value={cat}
-            current={filter}
-            count={MAPPINGS.filter(m => m.category === cat).length}
-            color={CATEGORY_COLORS[cat] || C.ind}
-            onClick={setFilter}
-          />
-        ))}
-      </div>
-
-      {/* Mappings */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-        {filtered.map((m, i) => (
-          <MappingRow key={i} mapping={m} color={CATEGORY_COLORS[m.category] || C.ind} />
-        ))}
-      </div>
-
-      {/* Footer */}
-      <div style={{
-        background: 'white', border: `1px solid ${C.bdr}`, borderRadius: 12,
-        padding: 22, marginTop: 24, fontSize: 13, color: C.t2, lineHeight: 1.7,
-      }}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: C.t1, marginBottom: 8 }}>
-          About this reference
-        </div>
-        FlowPilot AI's modernization workflow applies these mappings automatically when reading a `.p` file.
-        The agent identifies each ABL construct (FRAME, FOR EACH, EXCLUSIVE-LOCK, etc.) and emits the
-        equivalent React + FastAPI code. Every transformation is auditable in the generated PR — reviewers
-        see exactly what was changed and why.
-      </div>
-    </div>
-  );
-}
-
-function FilterChip({ label, value, current, count, color, onClick }: {
-  label: string; value: string; current: string; count: number; color: string; onClick: (v: string) => void;
-}) {
-  const active = current === value;
-  return (
-    <button
-      onClick={() => onClick(value)}
-      style={{
-        padding: '7px 14px', borderRadius: 20, fontSize: 12, fontWeight: 700,
-        background: active ? color : 'white',
-        color: active ? 'white' : color,
-        border: `1.5px solid ${color}`,
-        cursor: 'pointer', fontFamily: C.sans, transition: 'all 0.12s',
-        display: 'inline-flex', alignItems: 'center', gap: 6,
-      }}
-    >
-      {label}
-      <span style={{
-        fontSize: 10, padding: '1px 7px', borderRadius: 10,
-        background: active ? 'rgba(255,255,255,0.25)' : color + '22',
-        fontFamily: C.mono,
-      }}>{count}</span>
-    </button>
-  );
-}
-
-function MappingRow({ mapping, color }: { mapping: Mapping; color: string }) {
-  return (
-    <div style={{
-      background: 'white', border: `1px solid ${C.bdr}`,
-      borderLeft: `3px solid ${color}`, borderRadius: 10,
-      overflow: 'hidden',
-    }}>
-      <div style={{
-        padding: '8px 16px', background: color + '0d',
-        borderBottom: `1px solid ${C.bdr}`,
-        fontSize: 10, fontWeight: 700, color, fontFamily: C.mono,
-        textTransform: 'uppercase', letterSpacing: '0.06em',
-      }}>
-        {mapping.category}
-      </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
-        {/* ABL side */}
-        <div style={{
-          padding: 18, background: '#0f172a', color: '#e2e8f0',
-          borderRight: `1px solid ${C.bdr}`,
-        }}>
-          <div style={{
-            fontSize: 9, fontWeight: 700, color: '#94a3b8', fontFamily: C.mono,
-            textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8,
-          }}>
-            Progress ABL
+      <div className="stack">
+        <div className="card" style={{ padding: 14, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+          <div className="seg" role="tablist" aria-label="Filter by category">
+            <button className={filter === 'all' ? 'on' : ''} onClick={() => setFilter('all')}>All <span className="count">{MAPPINGS.length}</span></button>
+            {CATEGORIES.map((c) => (
+              <button key={c} className={filter === c ? 'on' : ''} onClick={() => setFilter(c)}>
+                {c} <span className="count">{MAPPINGS.filter((m) => m.category === c).length}</span>
+              </button>
+            ))}
           </div>
-          <pre style={{
-            margin: 0, fontFamily: C.mono, fontSize: 12, lineHeight: 1.6,
-            whiteSpace: 'pre-wrap', color: '#cbd5e1',
-          }}>{mapping.abl}</pre>
-          <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 10, fontStyle: 'italic' }}>
-            {mapping.ablDescription}
+          <div className="input-icon" style={{ flex: 1, minWidth: 220, marginLeft: 'auto', maxWidth: 340 }}>
+            <Search size={16} />
+            <input className="input" style={{ height: 38 }} placeholder="Search constructs" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Search constructs" />
           </div>
         </div>
 
-        {/* Modern side */}
-        <div style={{ padding: 18 }}>
-          <div style={{
-            fontSize: 9, fontWeight: 700, color: C.green, fontFamily: C.mono,
-            textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8,
-          }}>
-            Modern stack
+        <div className="card" style={{ overflow: 'hidden' }}>
+          <div className="map-row map-head">
+            <span>Category</span><span>Progress ABL</span><span /><span>Modern stack</span>
           </div>
-          <pre style={{
-            margin: 0, fontFamily: C.mono, fontSize: 12, lineHeight: 1.6,
-            whiteSpace: 'pre-wrap', color: C.t1,
-            background: '#f8fafc', padding: 10, borderRadius: 6,
-          }}>{mapping.modern}</pre>
-          <div style={{ fontSize: 12, color: C.t2, marginTop: 10, lineHeight: 1.5 }}>
-            {mapping.modernDescription}
-          </div>
-          {mapping.notes && (
-            <div style={{
-              marginTop: 10, padding: '8px 12px', borderRadius: 6,
-              background: C.amber + '14', color: '#92400e',
-              fontSize: 12, lineHeight: 1.5, fontWeight: 500,
-            }}>
-              <strong>Note:</strong> {mapping.notes}
+          {filtered.length === 0 && <EmptyState title="No mappings match your search." />}
+          {filtered.map((m, i) => (
+            <div key={i} className="map-row">
+              <div><span className="pill neutral">{m.category}</span></div>
+              <div>
+                <pre className="code dark">{m.abl}</pre>
+                <div className="map-desc">{m.ablDescription}</div>
+              </div>
+              <div className="map-arrow"><ArrowRight size={18} color={T.color.textFaint} /></div>
+              <div>
+                <pre className="code light">{m.modern}</pre>
+                <div className="map-desc">{m.modernDescription}</div>
+                {m.notes && <div className="alert info" style={{ marginTop: 10, fontSize: 14 }}><span>{m.notes}</span></div>}
+              </div>
             </div>
-          )}
+          ))}
         </div>
       </div>
-    </div>
+    </>
   );
 }

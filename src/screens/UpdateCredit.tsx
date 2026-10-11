@@ -1,217 +1,178 @@
-import React, { useState, useMemo } from 'react';
-import { C, PageHeader, BeforeAfter } from '../components/Shell';
-import { customers } from '../data/sports';
+import React, { useMemo, useState } from 'react';
+import { CheckCircle2, RotateCcw, ShieldCheck, TrendingUp } from 'lucide-react';
+import { customers as initial, utilisation, type Customer } from '../data/sports';
+import { ModernizedLayout } from '../components/ModernizationPanel';
+import { Card, EmptyState, Kpi, Modal, Pill, UtilMeter } from '../components/ui';
+import { T, fmtMoney } from '../theme';
 
-const PROGRESS_SCREEN = `Credit Limit Adjustment Job
-════════════════════════════════════════════════════════════
+/** Legacy defaults from sample-update-credit.p */
+const DEFAULT_THRESHOLD = 0.8;
+const DEFAULT_INCREASE = 1.2;
 
-Processing... Please wait.
+interface Change { custNum: number; name: string; balance: number; oldLimit: number; newLimit: number }
 
-Customer                      Old Limit    Balance      New Limit
-───────────────────────────   ──────────   ─────────    ──────────
-Go Fishing Ltd                    15,000    14,235.14    18,000
-Game Set Match                    15,000     8,254.00    18,000
+const ablNum = (n: number) => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-2 customers updated.
-Done.`;
+/** R1: Balance > CreditLimit * threshold AND CreditLimit > 0 */
+const isCandidate = (c: Customer, threshold: number) => c.creditLimit > 0 && c.balance > c.creditLimit * threshold;
 
-type Candidate = {
-  custNum: number;
-  name: string;
-  oldLimit: number;
-  balance: number;
-  ratio: number;
-  newLimit: number;
-};
+function legacyScreen() {
+  const rows = initial.filter((c) => isCandidate(c, DEFAULT_THRESHOLD));
+  const lines = rows.map((c) => `${String(c.custNum).padStart(5)} ${c.name.slice(0, 20).padEnd(20)} ${ablNum(c.balance).padStart(11)} ${ablNum(c.creditLimit).padStart(11)} ${ablNum(c.creditLimit * DEFAULT_INCREASE).padStart(11)}`);
+  return [
+    '┌──────────────────── Credit Limit Updates ────────────────────┐',
+    '│Cust# Name                     Balance   Old Limit   New Limit│',
+    '│───── ──────────────────── ─────────── ─────────── ───────────│',
+    ...lines.map((l) => `│${l.padEnd(62)}│`),
+    '└──────────────────────────────────────────────────────────────┘',
+    '',
+    '            ┌─ Information ────────────────┐',
+    `            │ ${`${rows.length} customer(s) updated.`.padEnd(29)}│`,
+    '            │            [ OK ]            │',
+    '            └──────────────────────────────┘',
+  ].join('\n');
+}
+const SCREEN = legacyScreen();
 
 export function UpdateCredit() {
-  const [applied, setApplied] = useState<Set<number>>(new Set());
-  const [threshold, setThreshold] = useState(0.8);
-  const [multiplier, setMultiplier] = useState(1.2);
+  const [db, setDb] = useState<Customer[]>(initial);
+  const [threshold, setThreshold] = useState(DEFAULT_THRESHOLD);
+  const [increase, setIncrease] = useState(DEFAULT_INCREASE);
+  const [excluded, setExcluded] = useState<Set<number>>(new Set());
+  const [confirm, setConfirm] = useState(false);
+  const [runs, setRuns] = useState<{ at: string; changes: Change[] }[]>([]);
 
-  const candidates: Candidate[] = useMemo(() => {
-    return customers
-      .filter(c => c.creditLimit > 0 && c.balance / c.creditLimit > threshold)
-      .map(c => ({
-        custNum: c.custNum,
-        name: c.name,
-        oldLimit: c.creditLimit,
-        balance: c.balance,
-        ratio: c.balance / c.creditLimit,
-        newLimit: Math.round(c.creditLimit * multiplier),
-      }))
-      .sort((a, b) => b.ratio - a.ratio);
-  }, [threshold, multiplier]);
-
-  const applyAll = () => setApplied(new Set(candidates.map(c => c.custNum)));
-  const apply = (n: number) => setApplied(new Set([...applied, n]));
-  const reset = () => setApplied(new Set());
-
-  const appliedCount = candidates.filter(c => applied.has(c.custNum)).length;
-  const totalIncrease = candidates
-    .filter(c => applied.has(c.custNum))
-    .reduce((s, c) => s + (c.newLimit - c.oldLimit), 0);
-
-  return (
-    <div>
-      <PageHeader
-        title="Credit Limit Adjustment"
-        subtitle="Batch-increase credit limits for customers with high balance-to-limit ratios. Originally a blocking EXCLUSIVE-LOCK batch job; now a preview-and-approve UI with granular control."
-        source="sports/sample-update-credit.p"
-      />
-
-      <BeforeAfter beforeContent={PROGRESS_SCREEN}>
-        <div>
-          {/* Controls */}
-          <div style={{
-            display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12,
-            padding: 14, background: C.card, borderRadius: 8, marginBottom: 16,
-          }}>
-            <SliderInput
-              label={`Threshold (Balance / Limit > ${(threshold * 100).toFixed(0)}%)`}
-              value={threshold}
-              min={0.5} max={1.0} step={0.05}
-              onChange={setThreshold}
-            />
-            <SliderInput
-              label={`Multiplier (New = Old × ${multiplier.toFixed(2)})`}
-              value={multiplier}
-              min={1.1} max={1.5} step={0.05}
-              onChange={setMultiplier}
-            />
-          </div>
-
-          {/* Summary */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 16 }}>
-            <StatCard label="Candidates" value={String(candidates.length)} color={C.amber} />
-            <StatCard label="Approved" value={`${appliedCount} / ${candidates.length}`} color={C.green} />
-            <StatCard label="Limit Increase" value={`+$${totalIncrease.toLocaleString()}`} color={C.ind} />
-          </div>
-
-          {candidates.length === 0 ? (
-            <div style={{ padding: 30, textAlign: 'center', color: C.t3, border: `1px dashed ${C.bdr}`, borderRadius: 8 }}>
-              No customers above the threshold. Try lowering it.
-            </div>
-          ) : (
-            <>
-              <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
-                <button
-                  onClick={applyAll}
-                  disabled={appliedCount === candidates.length}
-                  style={{
-                    padding: '7px 14px', borderRadius: 6, fontSize: 13, fontWeight: 700,
-                    background: C.green, color: 'white', border: 'none',
-                    cursor: appliedCount === candidates.length ? 'default' : 'pointer',
-                    opacity: appliedCount === candidates.length ? 0.5 : 1,
-                  }}
-                >✓ Approve all {candidates.length}</button>
-                {appliedCount > 0 && (
-                  <button
-                    onClick={reset}
-                    style={{
-                      padding: '7px 14px', borderRadius: 6, fontSize: 13, fontWeight: 700,
-                      background: 'transparent', color: C.red, border: `1px solid ${C.red}`, cursor: 'pointer',
-                    }}
-                  >Reset</button>
-                )}
-              </div>
-
-              <div style={{ background: 'white', border: `1px solid ${C.bdr}`, borderRadius: 8, overflow: 'hidden' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-                  <thead>
-                    <tr>
-                      {['#', 'Customer', 'Old Limit', 'Balance', 'Ratio', 'New Limit', 'Delta', 'Action'].map(h => (
-                        <th key={h} style={{
-                          padding: '10px 12px', textAlign: 'left',
-                          background: C.card, borderBottom: `1px solid ${C.bdr}`,
-                          fontSize: 10, fontWeight: 700, fontFamily: C.mono,
-                          textTransform: 'uppercase', letterSpacing: '0.05em', color: C.t3,
-                        }}>{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {candidates.map(c => {
-                      const done = applied.has(c.custNum);
-                      const delta = c.newLimit - c.oldLimit;
-                      return (
-                        <tr key={c.custNum} style={{ borderTop: `1px solid ${C.bdr}`, background: done ? '#ecfdf5' : 'white' }}>
-                          <td style={{ padding: '9px 12px', fontFamily: C.mono, color: C.t3 }}>#{c.custNum}</td>
-                          <td style={{ padding: '9px 12px', fontWeight: 600 }}>{c.name}</td>
-                          <td style={{ padding: '9px 12px', fontFamily: C.mono, textAlign: 'right' }}>
-                            ${c.oldLimit.toLocaleString()}
-                          </td>
-                          <td style={{ padding: '9px 12px', fontFamily: C.mono, textAlign: 'right', fontWeight: 700 }}>
-                            ${c.balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                          </td>
-                          <td style={{ padding: '9px 12px', fontFamily: C.mono, textAlign: 'right' }}>
-                            <span style={{
-                              padding: '2px 8px', borderRadius: 20,
-                              background: c.ratio > 0.9 ? '#fee2e2' : '#fef3c7',
-                              color: c.ratio > 0.9 ? '#991b1b' : '#92400e',
-                              fontWeight: 700,
-                            }}>
-                              {(c.ratio * 100).toFixed(0)}%
-                            </span>
-                          </td>
-                          <td style={{ padding: '9px 12px', fontFamily: C.mono, textAlign: 'right', fontWeight: 700, color: C.green }}>
-                            ${c.newLimit.toLocaleString()}
-                          </td>
-                          <td style={{ padding: '9px 12px', fontFamily: C.mono, textAlign: 'right', color: C.green }}>
-                            +${delta.toLocaleString()}
-                          </td>
-                          <td style={{ padding: '9px 12px' }}>
-                            {done ? (
-                              <span style={{ fontSize: 11, color: C.green, fontWeight: 700 }}>✓ Applied</span>
-                            ) : (
-                              <button
-                                onClick={() => apply(c.custNum)}
-                                style={{
-                                  padding: '5px 11px', borderRadius: 5, fontSize: 11, fontWeight: 700,
-                                  background: C.ind, color: 'white', border: 'none', cursor: 'pointer',
-                                }}
-                              >Apply</button>
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </>
-          )}
-        </div>
-      </BeforeAfter>
-    </div>
+  const candidates = useMemo(
+    () => db.filter((c) => isCandidate(c, threshold)).sort((a, b) => utilisation(b) - utilisation(a)),
+    [db, threshold],
   );
-}
+  const selected = candidates.filter((c) => !excluded.has(c.custNum));
+  const added = selected.reduce((s, c) => s + c.creditLimit * increase - c.creditLimit, 0);
+  const exposure = candidates.reduce((s, c) => s + c.balance, 0);
+  const isDefault = threshold === DEFAULT_THRESHOLD && increase === DEFAULT_INCREASE;
 
-function SliderInput({ label, value, min, max, step, onChange }: { label: string; value: number; min: number; max: number; step: number; onChange: (v: number) => void }) {
-  return (
-    <div>
-      <div style={{ fontSize: 11, fontWeight: 600, color: C.t2, marginBottom: 6 }}>{label}</div>
-      <input
-        type="range"
-        min={min} max={max} step={step}
-        value={value}
-        onChange={e => onChange(parseFloat(e.target.value))}
-        style={{ width: '100%', accentColor: C.ind }}
-      />
-    </div>
-  );
-}
+  const toggle = (n: number) => setExcluded((s) => { const x = new Set(s); x.has(n) ? x.delete(n) : x.add(n); return x; });
 
-function StatCard({ label, value, color }: { label: string; value: string; color: string }) {
+  // R2 to R5: apply as one unit of work and record the change list.
+  const apply = () => {
+    const changes: Change[] = selected.map((c) => ({ custNum: c.custNum, name: c.name, balance: c.balance, oldLimit: c.creditLimit, newLimit: c.creditLimit * increase }));
+    const byId = new Map(changes.map((ch) => [ch.custNum, ch.newLimit]));
+    setDb(db.map((c) => (byId.has(c.custNum) ? { ...c, creditLimit: byId.get(c.custNum)! } : c)));
+    setRuns([{ at: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), changes }, ...runs]);
+    setExcluded(new Set());
+    setConfirm(false);
+  };
+
   return (
-    <div style={{
-      padding: '12px 14px', borderRadius: 8, background: 'white',
-      border: `1px solid ${color}22`, borderTop: `3px solid ${color}`,
-    }}>
-      <div style={{ fontSize: 10, fontWeight: 700, color: C.t3, fontFamily: C.mono, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-        {label}
+    <ModernizedLayout
+      program="update_credit"
+      title="Credit management"
+      subtitle="Raise limits for customers close to their credit limit. Preview the changes, then apply them in one step."
+      crumbs={['Finance', 'Credit management']}
+      legacyScreen={SCREEN}
+    >
+      <div className="grid-kpi" style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
+        <Kpi label="Over threshold" value={candidates.length} tone={candidates.length ? 'danger' : 'success'} icon={<TrendingUp size={18} />} foot={`Balance above ${Math.round(threshold * 100)}% of limit`} />
+        <Kpi label="Balance at risk" value={fmtMoney(exposure)} tone="warning" foot="Owed by those customers" />
+        <Kpi label="Additional credit" value={`+${fmtMoney(added)}`} tone="brand" icon={<ShieldCheck size={18} />} foot={`${selected.length} selected for update`} />
       </div>
-      <div style={{ fontSize: 18, fontWeight: 800, color, marginTop: 3 }}>{value}</div>
+
+      <Card title="Rule parameters" sub="Defaults come from the original program: balance over 80% of limit, limit raised by 20%."
+        actions={isDefault ? <Pill tone="success" dot>Legacy defaults</Pill> : <button className="btn sm" onClick={() => { setThreshold(DEFAULT_THRESHOLD); setIncrease(DEFAULT_INCREASE); }}><RotateCcw size={14} /> Reset to defaults</button>}>
+        <div className="grid-2">
+          <Slider label="Threshold" value={threshold} min={0.5} max={0.95} step={0.05} onChange={setThreshold}
+            display={`Balance > ${Math.round(threshold * 100)}% of limit`} />
+          <Slider label="Increase" value={increase} min={1.05} max={1.5} step={0.05} onChange={setIncrease}
+            display={`New limit = old x ${increase.toFixed(2)}`} />
+        </div>
+      </Card>
+
+      <Card pad={false} title="Proposed changes" sub="Clear a row to leave that customer unchanged."
+        actions={<button className="btn primary" disabled={selected.length === 0} onClick={() => setConfirm(true)}>Apply to {selected.length} customer{selected.length === 1 ? '' : 's'}</button>}>
+        {candidates.length === 0 ? (
+          <EmptyState title="No customers are over the threshold." sub="Lower the threshold to preview more customers." icon={<CheckCircle2 size={28} color={T.color.success} />} />
+        ) : (
+          <div className="table-wrap">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th style={{ width: 48 }}>
+                    <input type="checkbox" aria-label="Select all" checked={selected.length === candidates.length}
+                      onChange={(e) => setExcluded(e.target.checked ? new Set() : new Set(candidates.map((c) => c.custNum)))} />
+                  </th>
+                  <th>Customer</th><th style={{ textAlign: 'right' }}>Balance</th><th>Utilisation</th>
+                  <th style={{ textAlign: 'right' }}>Old limit</th><th style={{ textAlign: 'right' }}>New limit</th>
+                </tr>
+              </thead>
+              <tbody>
+                {candidates.map((c) => {
+                  const on = !excluded.has(c.custNum);
+                  return (
+                    <tr key={c.custNum} className={`clickable ${on ? '' : ''}`} onClick={() => toggle(c.custNum)} style={{ opacity: on ? 1 : 0.55 }}>
+                      <td><input type="checkbox" checked={on} onChange={() => toggle(c.custNum)} onClick={(e) => e.stopPropagation()} aria-label={`Include ${c.name}`} /></td>
+                      <td><div className="cell-strong">{c.name}</div><div className="cell-sub mono">#{c.custNum}</div></td>
+                      <td className="num right">{fmtMoney(c.balance)}</td>
+                      <td><UtilMeter ratio={utilisation(c)} width={80} /></td>
+                      <td className="num right muted">{fmtMoney(c.creditLimit)}</td>
+                      <td className="num right cell-strong" style={{ color: on ? T.color.success : undefined }}>{fmtMoney(c.creditLimit * increase)}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Card>
+
+      <Card pad={false} title="Change log" sub="Each run records customer, balance, old limit and new limit.">
+        {runs.length === 0 ? (
+          <EmptyState title="No adjustments applied in this session." />
+        ) : runs.map((r, i) => (
+          <div key={i} style={{ borderTop: i ? `1px solid ${T.color.border}` : 0 }}>
+            <div className="alert success" style={{ margin: 16 }}>
+              <CheckCircle2 size={18} /><span><b>{r.changes.length} customer(s) updated.</b> <span className="muted">Applied at {r.at}</span></span>
+            </div>
+            <div className="table-wrap">
+              <table className="table">
+                <thead><tr><th>Cust #</th><th>Name</th><th style={{ textAlign: 'right' }}>Balance</th><th style={{ textAlign: 'right' }}>Old limit</th><th style={{ textAlign: 'right' }}>New limit</th></tr></thead>
+                <tbody>
+                  {r.changes.map((c) => (
+                    <tr key={c.custNum}>
+                      <td className="mono">{c.custNum}</td><td className="cell-strong">{c.name}</td>
+                      <td className="num right">{fmtMoney(c.balance)}</td><td className="num right muted">{fmtMoney(c.oldLimit)}</td>
+                      <td className="num right cell-strong" style={{ color: T.color.success }}>{fmtMoney(c.newLimit)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ))}
+      </Card>
+
+      <Modal open={confirm} onClose={() => setConfirm(false)} title="Apply credit limit changes?">
+        <p style={{ marginTop: 0 }}>
+          {selected.length} customer{selected.length === 1 ? '' : 's'} will have their credit limit raised by {Math.round((increase - 1) * 100)}%,
+          adding <b className="num">{fmtMoney(added)}</b> of credit in total. All changes are applied together.
+        </p>
+        <ul style={{ paddingLeft: 20, margin: '0 0 20px', color: T.color.textSecondary }}>
+          {selected.map((c) => <li key={c.custNum}>{c.name}: {fmtMoney(c.creditLimit)} to <b>{fmtMoney(c.creditLimit * increase)}</b></li>)}
+        </ul>
+        <div className="row" style={{ justifyContent: 'flex-end', gap: 10 }}>
+          <button className="btn" onClick={() => setConfirm(false)}>Cancel</button>
+          <button className="btn primary" onClick={apply}>Apply changes</button>
+        </div>
+      </Modal>
+    </ModernizedLayout>
+  );
+}
+
+function Slider({ label, value, min, max, step, onChange, display }: { label: string; value: number; min: number; max: number; step: number; onChange: (v: number) => void; display: string }) {
+  return (
+    <div className="field">
+      <label style={{ justifyContent: 'space-between' }}>{label}<span className="num" style={{ color: T.color.text }}>{display}</span></label>
+      <input className="range" type="range" min={min} max={max} step={step} value={value}
+        onChange={(e) => onChange(Math.round(parseFloat(e.target.value) * 100) / 100)} aria-label={label} />
     </div>
   );
 }

@@ -143,3 +143,17 @@ export function linesByOrder(orderNum: number) {
 export function itemById(id: number) {
   return items.find(i => i.itemNum === id);
 }
+
+/* Derived helpers used across the modernized screens */
+export function orderTotal(orderNum: number) {
+  return linesByOrder(orderNum).reduce((s, l) => s + l.extendedPrice, 0);
+}
+export function customerLabel(custNum: number) {
+  return customerById(custNum)?.name ?? `Customer #${custNum}`;
+}
+export function utilisation(c: Customer) {
+  return c.creditLimit > 0 ? c.balance / c.creditLimit : 0;
+}
+export function isOpenOrder(o: Order) {
+  return o.status.toLowerCase() !== 'shipped';
+}
