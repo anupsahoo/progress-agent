@@ -1,0 +1,179 @@
+{
+  "Employee": [
+    {
+      "EmpNum": 1,
+      "LastName": "Koberlein",
+      "FirstName": "Kelly",
+      "Address": "4500 Main Street",
+      "Address2": "Apt 22",
+      "City": "Houston",
+      "State": "TX",
+      "PostalCode": "75024",
+      "HomePhone": "(214) 234-4657",
+      "WorkPhone": "(617) 234-5748",
+      "DeptCode": "100",
+      "Position": "Consultant",
+      "Birthdate": "1968-10-28",
+      "StartDate": "1997-05-06",
+      "VacationDaysLeft": 8,
+      "SickDaysLeft": 5
+    },
+    {
+      "EmpNum": 2,
+      "LastName": "Andrews",
+      "FirstName": "Anita",
+      "Address": "10 Smith St",
+      "Address2": "",
+      "City": "Bedford",
+      "State": "GA",
+      "PostalCode": "66766",
+      "HomePhone": "(617) 555-1111",
+      "WorkPhone": "(617) 280-4599",
+      "DeptCode": "100",
+      "Position": "Consultant",
+      "Birthdate": "1965-12-12",
+      "StartDate": "1997-11-03",
+      "VacationDaysLeft": 0,
+      "SickDaysLeft": 0
+    },
+    {
+      "EmpNum": 3,
+      "LastName": "Smith",
+      "FirstName": "Justine",
+      "Address": "1342 Atlantic Ave",
+      "Address2": "Apt 345b",
+      "City": "Boston",
+      "State": "MA",
+      "PostalCode": "01834",
+      "HomePhone": "617 333-3334",
+      "WorkPhone": "800 787-8484",
+      "DeptCode": "400",
+      "Position": "Sales Manager",
+      "Birthdate": "1960-01-08",
+      "StartDate": "1997-06-19",
+      "VacationDaysLeft": 5,
+      "SickDaysLeft": 4
+    }
+  ],
+  "Department": [
+    {
+      "DeptCode": "100",
+      "DeptName": "Consulting"
+    },
+    {
+      "DeptCode": "200",
+      "DeptName": "Administration"
+    },
+    {
+      "DeptCode": "300",
+      "DeptName": "Marketing"
+    }
+  ],
+  "Benefits": [
+    {
+      "EmpNum": 2,
+      "HealthCare": "Aetna PP",
+      "LifeInsurance": 45000,
+      "Pension401K": 15,
+      "StockPurchase": 10,
+      "MedicalSpending": 1000,
+      "DependentCare": 1500
+    },
+    {
+      "EmpNum": 3,
+      "HealthCare": "Aetna PP",
+      "LifeInsurance": 50000,
+      "Pension401K": 15,
+      "StockPurchase": 25,
+      "MedicalSpending": 3500,
+      "DependentCare": 5000
+    },
+    {
+      "EmpNum": 4,
+      "HealthCare": "Aetna PP",
+      "LifeInsurance": 10000,
+      "Pension401K": 5,
+      "StockPurchase": 10,
+      "MedicalSpending": 20000,
+      "DependentCare": 10000
+    }
+  ],
+  "Family": [
+    {
+      "EmpNum": 1,
+      "RelativeName": "Jenny Koberlein",
+      "Relation": "Daughter",
+      "Birthdate": "1998-01-15",
+      "CoveredOnBenefits": true,
+      "BenefitDate": "1998-01-15"
+    },
+    {
+      "EmpNum": 1,
+      "RelativeName": "Ken Koberlein",
+      "Relation": "Spouse",
+      "Birthdate": "1965-12-07",
+      "CoveredOnBenefits": true,
+      "BenefitDate": "1998-03-16"
+    },
+    {
+      "EmpNum": 2,
+      "RelativeName": "Bill Andrews",
+      "Relation": "Son",
+      "Birthdate": "1990-12-21",
+      "CoveredOnBenefits": true,
+      "BenefitDate": "1997-11-03"
+    }
+  ],
+  "TimeSheet": [
+    {
+      "EmpNum": 1,
+      "DayRecorded": "1998-01-05",
+      "TypeRecorded": "part",
+      "AMTimeIn": "855",
+      "AMTimeOut": "",
+      "PMTimeIn": "",
+      "PMTimeOut": "115",
+      "RegularHours": 4,
+      "OvertimeHours": 0.25
+    },
+    {
+      "EmpNum": 2,
+      "DayRecorded": "1998-01-05",
+      "TypeRecorded": "full",
+      "AMTimeIn": "901",
+      "AMTimeOut": "",
+      "PMTimeIn": "",
+      "PMTimeOut": "500",
+      "RegularHours": 8,
+      "OvertimeHours": 0
+    },
+    {
+      "EmpNum": 3,
+      "DayRecorded": "1998-01-09",
+      "TypeRecorded": "full",
+      "AMTimeIn": "745",
+      "AMTimeOut": "",
+      "PMTimeIn": "",
+      "PMTimeOut": "445",
+      "RegularHours": 8,
+      "OvertimeHours": 1
+    }
+  ],
+  "Vacation": [
+    {
+      "EmpNum": 1,
+      "StartDate": "1998-01-02",
+      "EndDate": "1998-01-02"
+    },
+    {
+      "EmpNum": 2,
+      "StartDate": "1998-01-02",
+      "EndDate": "1998-01-02"
+    },
+    {
+      "EmpNum": 3,
+      "StartDate": "1998-03-04",
+      "EndDate": "1998-03-06"
+    }
+  ]
+}
