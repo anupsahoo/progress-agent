@@ -1,0 +1,9 @@
+{
+  "run_id": "emv4aro3z",
+  "module": "supplier-management",
+  "wave": 1,
+  "legacy_programs": 38,
+  "legacy_lines": 3860,
+  "generated_by": "FlowPilot AI-DLC (CogenSight)",
+  "human_gate": "A person reviews and merges this pull request in GitHub."
+}
