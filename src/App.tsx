@@ -38,7 +38,7 @@ function readHash(): { route: string; param?: string; sub?: string } {
 export default function App() {
   const toasts = useToasts();
   return (
-    <LiveProvider onChange={(msg) => toasts.push(msg, <CheckCircle2 size={17} color="#5fd34b" />)}>
+    <LiveProvider onChange={(msg) => toasts.push(msg, <CheckCircle2 size={17} color="#5DB451" />)}>
       <Routes />
       <Transformation />
       {toasts.node}

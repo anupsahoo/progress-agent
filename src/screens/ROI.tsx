@@ -60,7 +60,7 @@ export function ROI() {
         </div>
 
         <Card title="Cost comparison" sub={`${programs.toLocaleString()} programs`}>
-          <Bar label="Manual modernization" value={m.manualTotalCost} max={Math.max(m.manualTotalCost, m.fpTotalCost)} color="#94a3b8" />
+          <Bar label="Manual modernization" value={m.manualTotalCost} max={Math.max(m.manualTotalCost, m.fpTotalCost)} color="#7FA0D6" />
           <Bar label="FlowPilot" value={m.fpTotalCost} max={Math.max(m.manualTotalCost, m.fpTotalCost)} color={T.color.brand} />
           <p className="muted" style={{ margin: '14px 0 0', fontSize: 14.5 }}>
             Modernizing <b style={{ color: T.color.text }}>{programs.toLocaleString()}</b> programs costs {millions(m.fpTotalCost)} with FlowPilot instead of {millions(m.manualTotalCost)}, and finishes {m.monthsSaved.toFixed(1)} months sooner.

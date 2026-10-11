@@ -113,7 +113,7 @@ export function CompareSplit({ legacy, children, describe, source, legacyLabel }
     ? `.cmp-legacy [data-map="${CSS.escape(active)}"]{background:var(--t-fg)!important;color:var(--t-bg)!important;text-shadow:none!important;border-radius:2px;box-shadow:0 0 0 2px var(--t-fg),0 0 18px var(--t-glow)}` +
       `.cmp-legacy [data-map="${CSS.escape(active)}"] *{color:var(--t-bg)!important;text-shadow:none!important}` +
       `.cmp-modern [data-map="${CSS.escape(active)}"]:not(tr){outline:2px solid var(--color-accent);outline-offset:3px;border-radius:8px;box-shadow:0 0 0 6px rgba(58,154,46,.14)}` +
-      `.cmp-modern tr[data-map="${CSS.escape(active)}"] td{background:#edf7ea!important;box-shadow:inset 0 2px 0 #3A9A2E,inset 0 -2px 0 #3A9A2E}`
+      `.cmp-modern tr[data-map="${CSS.escape(active)}"] td{background:#EEF8EC!important;box-shadow:inset 0 2px 0 #3A9A2E,inset 0 -2px 0 #3A9A2E}`
     : '';
 
   return (

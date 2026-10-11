@@ -14,7 +14,7 @@ function Ring({ value, total }: { value: number; total: number }) {
     <div className="ring">
       <svg width="140" height="140" viewBox="0 0 140 140" aria-hidden>
         <defs>
-          <linearGradient id="ring-g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#5fd34b" /><stop offset="1" stopColor="#9cc2ff" /></linearGradient>
+          <linearGradient id="ring-g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#5DB451" /><stop offset="1" stopColor="#B9CCEA" /></linearGradient>
         </defs>
         <circle cx="70" cy="70" r={r} fill="none" stroke="rgba(255,255,255,.16)" strokeWidth="12" />
         <circle cx="70" cy="70" r={r} fill="none" stroke="url(#ring-g)" strokeWidth="12" strokeLinecap="round"
@@ -50,7 +50,7 @@ export function EstateHero() {
         </div>
         <div className="eh-live"><Radio size={14} /> Status from GitHub{live.checkedAt ? ` · checked ${new Date(live.checkedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : ''}
           <button onClick={() => live.refresh()} style={{ marginLeft: 10, padding: '3px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,.35)', background: 'rgba(255,255,255,.08)', color: 'inherit', cursor: 'pointer', font: 'inherit', fontWeight: 600 }}>Refresh</button>
-          <button onClick={() => live.watch()} disabled={live.watching} style={{ marginLeft: 8, padding: '3px 10px', borderRadius: 8, border: 'none', background: live.watching ? 'rgba(95,211,75,.25)' : 'linear-gradient(135deg,#3A9A2E,#1F4E9E)', color: '#fff', cursor: live.watching ? 'default' : 'pointer', font: 'inherit', fontWeight: 700 }}>
+          <button onClick={() => live.watch()} disabled={live.watching} style={{ marginLeft: 8, padding: '3px 10px', borderRadius: 8, border: 'none', background: live.watching ? 'rgba(93,180,81,.25)' : 'linear-gradient(135deg,#3A9A2E,#1F4E9E)', color: '#fff', cursor: live.watching ? 'default' : 'pointer', font: 'inherit', fontWeight: 700 }}>
             {live.watching ? 'Watching for FlowPilot…' : 'Watch for FlowPilot'}
           </button>
           {live.modernCount > 0 && <button onClick={() => window.dispatchEvent(new Event('pa:transform'))} style={{ marginLeft: 8, padding: '3px 10px', borderRadius: 8, border: '1px solid rgba(255,255,255,.35)', background: 'rgba(255,255,255,.08)', color: 'inherit', cursor: 'pointer', font: 'inherit', fontWeight: 600 }}>Replay transformation</button>}

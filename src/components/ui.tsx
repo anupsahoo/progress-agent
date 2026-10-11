@@ -105,7 +105,7 @@ export function utilTone(r: number): Tone {
 
 export function UtilMeter({ ratio, width = 90 }: { ratio: number; width?: number }) {
   const tone = utilTone(ratio);
-  const color = tone === 'danger' ? '#dc2626' : tone === 'warning' ? '#d97706' : '#3A9A2E';
+  const color = tone === 'danger' ? '#4A78C2' : tone === 'warning' ? '#2C64B8' : '#3A9A2E';
   return (
     <div className="util">
       <div className="meter" style={{ width }}>
