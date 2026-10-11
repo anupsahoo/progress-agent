@@ -1,0 +1,113 @@
+{
+  "Salesrep": [
+    {
+      "SalesRep": "BBB",
+      "RepName": "Brawn , Bubba B.",
+      "Region": "East",
+      "MonthQuota": [
+        1600,
+        1648,
+        1697,
+        1748,
+        1800,
+        1854,
+        1910,
+        1967,
+        2026,
+        2087,
+        2150,
+        2215
+      ]
+    },
+    {
+      "SalesRep": "DKP",
+      "RepName": "Pitt , Dirk K.",
+      "Region": "Central",
+      "MonthQuota": [
+        1800,
+        1854,
+        1910,
+        1967,
+        2026,
+        2087,
+        2150,
+        2215,
+        2281,
+        2349,
+        2419,
+        2492
+      ]
+    },
+    {
+      "SalesRep": "DOS",
+      "RepName": "Donna Swindall",
+      "Region": "Southern",
+      "MonthQuota": [
+        3800,
+        3914,
+        4031,
+        4152,
+        4277,
+        4405,
+        4537,
+        4673,
+        4813,
+        4957,
+        5106,
+        5259
+      ]
+    }
+  ],
+  "State": [
+    {
+      "State": "AK",
+      "StateName": "Alaska",
+      "Region": "West"
+    },
+    {
+      "State": "AL",
+      "StateName": "Alabama",
+      "Region": "South"
+    },
+    {
+      "State": "AR",
+      "StateName": "Arkansas",
+      "Region": "Central"
+    }
+  ],
+  "LocalDefault": [
+    {
+      "Country": "Canada",
+      "Region1Label": "City",
+      "Region2Label": "Province",
+      "PostalLabel": "Postal Code",
+      "PostalFormat": "X9X 9X9",
+      "TelFormat": "(999) 999-9999",
+      "CurrencySymbol": "$",
+      "DateFormat": "DMY",
+      "LocalDefNum": 1
+    },
+    {
+      "Country": "Deutschland",
+      "Region1Label": "Stadt",
+      "Region2Label": "",
+      "PostalLabel": "Postleitzahl",
+      "PostalFormat": "9999",
+      "TelFormat": "X(15)",
+      "CurrencySymbol": "D",
+      "DateFormat": "DMY",
+      "LocalDefNum": 2
+    },
+    {
+      "Country": "Italia",
+      "Region1Label": "Citta",
+      "Region2Label": "Provincia",
+      "PostalLabel": "Postale",
+      "PostalFormat": "",
+      "TelFormat": "",
+      "CurrencySymbol": "L",
+      "DateFormat": "DMY",
+      "LocalDefNum": 3
+    }
+  ]
+}
