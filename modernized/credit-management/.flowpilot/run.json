@@ -1,0 +1,9 @@
+{
+  "run_id": "emv4aro3z",
+  "module": "credit-management",
+  "wave": 3,
+  "legacy_programs": 27,
+  "legacy_lines": 3783,
+  "generated_by": "FlowPilot AI-DLC (CogenSight)",
+  "human_gate": "A person reviews and merges this pull request in GitHub."
+}
