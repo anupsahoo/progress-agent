@@ -1,0 +1,33 @@
+{
+  "tool": "FlowPilot AI-DLC",
+  "tenant": "CogenSight",
+  "program": "customer_maint.p",
+  "run": "41ouzb",
+  "stage": "ui-tests",
+  "agents": [
+    "Orchestrator",
+    "ABL Analyzer",
+    "UI Converter",
+    "API Converter",
+    "Test Agent",
+    "Parity Checker",
+    "Reviewer",
+    "PR Agent"
+  ],
+  "harness": [
+    "typecheck",
+    "lint",
+    "unit",
+    "contract",
+    "security-scan",
+    "llm-judge-vs-spec",
+    "parity"
+  ],
+  "human_gates": [
+    "spec",
+    "code",
+    "tests",
+    "release"
+  ],
+  "generated_at": "2026-10-11T16:36:34.540Z"
+}
