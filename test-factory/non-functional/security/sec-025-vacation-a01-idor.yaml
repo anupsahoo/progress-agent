@@ -1,0 +1,16 @@
+# sec-025-vacation-a01-idor: Vacation: A01 Broken access control (IDOR)
+id: sec-025-vacation-a01-idor
+title: "Vacation: A01 Broken access control (IDOR)"
+module: hr-payroll
+table: Vacation
+owasp: "A01:2021 Broken Access Control"
+cwe: CWE-639
+severity: high
+target:
+  method: GET
+  path: "/api/hr-payroll/vacations/1/1998-01-02"
+payloads:
+  - "token of a user without the HR & Payroll role"
+expected: "403 for users outside the module role; never another tenant's record"
+legacy_reference: legacy/hr-payroll/si_vacation.p
+automated_by: zap-baseline + custom request runner

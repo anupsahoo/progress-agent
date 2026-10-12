@@ -1,0 +1,16 @@
+# sec-056-supplier-a05-headers: Supplier: A05 Security misconfiguration
+id: sec-056-supplier-a05-headers
+title: "Supplier: A05 Security misconfiguration"
+module: supplier-management
+table: Supplier
+owasp: "A05:2021 Security Misconfiguration"
+cwe: CWE-16
+severity: medium
+target:
+  method: GET
+  path: "/api/supplier-management/suppliers"
+payloads:
+  []
+expected: "X-Content-Type-Options nosniff, no Server version banner, CORS limited to the app origin"
+legacy_reference: legacy/supplier-management/si_supplier.p
+automated_by: zap-baseline + custom request runner

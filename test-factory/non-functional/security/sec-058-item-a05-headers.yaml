@@ -1,0 +1,16 @@
+# sec-058-item-a05-headers: Item: A05 Security misconfiguration
+id: sec-058-item-a05-headers
+title: "Item: A05 Security misconfiguration"
+module: inventory
+table: Item
+owasp: "A05:2021 Security Misconfiguration"
+cwe: CWE-16
+severity: medium
+target:
+  method: GET
+  path: "/api/inventory/items"
+payloads:
+  []
+expected: "X-Content-Type-Options nosniff, no Server version banner, CORS limited to the app origin"
+legacy_reference: legacy/inventory/si_item.p
+automated_by: zap-baseline + custom request runner

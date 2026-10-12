@@ -1,0 +1,19 @@
+# sec-026-customer-a03-injection: Customer: A03 Injection in search
+id: sec-026-customer-a03-injection
+title: "Customer: A03 Injection in search"
+module: customer-management
+table: Customer
+owasp: "A03:2021 Injection"
+cwe: CWE-89
+severity: high
+target:
+  method: GET
+  path: "/api/customer-management/customers?q="
+payloads:
+  - "' OR '1'='1"
+  - "\"; DROP TABLE Customer; --"
+  - "${jndi:ldap://x}"
+  - "<script>alert(1)</script>"
+expected: "200 with an empty or filtered page; Country search is parameterised; no stack trace"
+legacy_reference: legacy/customer-management/si_customer.p
+automated_by: zap-baseline + custom request runner

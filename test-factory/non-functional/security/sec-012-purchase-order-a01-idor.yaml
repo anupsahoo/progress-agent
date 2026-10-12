@@ -1,0 +1,16 @@
+# sec-012-purchase-order-a01-idor: PurchaseOrder: A01 Broken access control (IDOR)
+id: sec-012-purchase-order-a01-idor
+title: "PurchaseOrder: A01 Broken access control (IDOR)"
+module: purchasing
+table: PurchaseOrder
+owasp: "A01:2021 Broken Access Control"
+cwe: CWE-639
+severity: high
+target:
+  method: GET
+  path: "/api/purchasing/purchase-orders/8001"
+payloads:
+  - "token of a user without the Purchasing role"
+expected: "403 for users outside the module role; never another tenant's record"
+legacy_reference: legacy/purchasing/si_purchase_order.p
+automated_by: zap-baseline + custom request runner

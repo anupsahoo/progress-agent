@@ -1,0 +1,16 @@
+# sec-005-local-default-a01-idor: LocalDefault: A01 Broken access control (IDOR)
+id: sec-005-local-default-a01-idor
+title: "LocalDefault: A01 Broken access control (IDOR)"
+module: sales-territories
+table: LocalDefault
+owasp: "A01:2021 Broken Access Control"
+cwe: CWE-639
+severity: high
+target:
+  method: GET
+  path: "/api/sales-territories/local-defaults/1"
+payloads:
+  - "token of a user without the Sales & Territories role"
+expected: "403 for users outside the module role; never another tenant's record"
+legacy_reference: legacy/sales-territories/si_local_default.p
+automated_by: zap-baseline + custom request runner

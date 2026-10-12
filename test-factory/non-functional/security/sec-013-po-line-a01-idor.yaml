@@ -1,0 +1,16 @@
+# sec-013-po-line-a01-idor: POLine: A01 Broken access control (IDOR)
+id: sec-013-po-line-a01-idor
+title: "POLine: A01 Broken access control (IDOR)"
+module: purchasing
+table: POLine
+owasp: "A01:2021 Broken Access Control"
+cwe: CWE-639
+severity: high
+target:
+  method: GET
+  path: "/api/purchasing/po-lines/8001/1"
+payloads:
+  - "token of a user without the Purchasing role"
+expected: "403 for users outside the module role; never another tenant's record"
+legacy_reference: legacy/purchasing/si_po_line.p
+automated_by: zap-baseline + custom request runner

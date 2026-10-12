@@ -1,0 +1,19 @@
+# sec-030-local-default-a03-injection: LocalDefault: A03 Injection in search
+id: sec-030-local-default-a03-injection
+title: "LocalDefault: A03 Injection in search"
+module: sales-territories
+table: LocalDefault
+owasp: "A03:2021 Injection"
+cwe: CWE-89
+severity: high
+target:
+  method: GET
+  path: "/api/sales-territories/local-defaults?q="
+payloads:
+  - "' OR '1'='1"
+  - "\"; DROP TABLE LocalDefault; --"
+  - "${jndi:ldap://x}"
+  - "<script>alert(1)</script>"
+expected: "200 with an empty or filtered page; Country search is parameterised; no stack trace"
+legacy_reference: legacy/sales-territories/si_local_default.p
+automated_by: zap-baseline + custom request runner

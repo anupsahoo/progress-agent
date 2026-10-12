@@ -1,0 +1,16 @@
+# sec-071-department-a05-headers: Department: A05 Security misconfiguration
+id: sec-071-department-a05-headers
+title: "Department: A05 Security misconfiguration"
+module: hr-payroll
+table: Department
+owasp: "A05:2021 Security Misconfiguration"
+cwe: CWE-16
+severity: medium
+target:
+  method: GET
+  path: "/api/hr-payroll/departments"
+payloads:
+  []
+expected: "X-Content-Type-Options nosniff, no Server version banner, CORS limited to the app origin"
+legacy_reference: legacy/hr-payroll/si_department.p
+automated_by: zap-baseline + custom request runner

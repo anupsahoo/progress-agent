@@ -1,0 +1,19 @@
+# sec-031-supplier-a03-injection: Supplier: A03 Injection in search
+id: sec-031-supplier-a03-injection
+title: "Supplier: A03 Injection in search"
+module: supplier-management
+table: Supplier
+owasp: "A03:2021 Injection"
+cwe: CWE-89
+severity: high
+target:
+  method: GET
+  path: "/api/supplier-management/suppliers?q="
+payloads:
+  - "' OR '1'='1"
+  - "\"; DROP TABLE Supplier; --"
+  - "${jndi:ldap://x}"
+  - "<script>alert(1)</script>"
+expected: "200 with an empty or filtered page; Name search is parameterised; no stack trace"
+legacy_reference: legacy/supplier-management/si_supplier.p
+automated_by: zap-baseline + custom request runner

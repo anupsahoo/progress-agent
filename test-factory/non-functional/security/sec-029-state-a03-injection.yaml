@@ -1,0 +1,19 @@
+# sec-029-state-a03-injection: State: A03 Injection in search
+id: sec-029-state-a03-injection
+title: "State: A03 Injection in search"
+module: sales-territories
+table: State
+owasp: "A03:2021 Injection"
+cwe: CWE-89
+severity: high
+target:
+  method: GET
+  path: "/api/sales-territories/states?q="
+payloads:
+  - "' OR '1'='1"
+  - "\"; DROP TABLE State; --"
+  - "${jndi:ldap://x}"
+  - "<script>alert(1)</script>"
+expected: "200 with an empty or filtered page; State search is parameterised; no stack trace"
+legacy_reference: legacy/sales-territories/si_state.p
+automated_by: zap-baseline + custom request runner

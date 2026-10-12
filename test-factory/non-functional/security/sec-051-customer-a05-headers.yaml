@@ -1,0 +1,16 @@
+# sec-051-customer-a05-headers: Customer: A05 Security misconfiguration
+id: sec-051-customer-a05-headers
+title: "Customer: A05 Security misconfiguration"
+module: customer-management
+table: Customer
+owasp: "A05:2021 Security Misconfiguration"
+cwe: CWE-16
+severity: medium
+target:
+  method: GET
+  path: "/api/customer-management/customers"
+payloads:
+  []
+expected: "X-Content-Type-Options nosniff, no Server version banner, CORS limited to the app origin"
+legacy_reference: legacy/customer-management/si_customer.p
+automated_by: zap-baseline + custom request runner

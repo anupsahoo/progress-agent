@@ -1,0 +1,16 @@
+# sec-066-ship-to-a05-headers: ShipTo: A05 Security misconfiguration
+id: sec-066-ship-to-a05-headers
+title: "ShipTo: A05 Security misconfiguration"
+module: order-fulfilment
+table: ShipTo
+owasp: "A05:2021 Security Misconfiguration"
+cwe: CWE-16
+severity: medium
+target:
+  method: GET
+  path: "/api/order-fulfilment/ship-tos"
+payloads:
+  []
+expected: "X-Content-Type-Options nosniff, no Server version banner, CORS limited to the app origin"
+legacy_reference: legacy/order-fulfilment/si_ship_to.p
+automated_by: zap-baseline + custom request runner

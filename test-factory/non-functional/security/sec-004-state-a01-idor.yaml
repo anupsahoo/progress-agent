@@ -1,0 +1,16 @@
+# sec-004-state-a01-idor: State: A01 Broken access control (IDOR)
+id: sec-004-state-a01-idor
+title: "State: A01 Broken access control (IDOR)"
+module: sales-territories
+table: State
+owasp: "A01:2021 Broken Access Control"
+cwe: CWE-639
+severity: high
+target:
+  method: GET
+  path: "/api/sales-territories/states/AK"
+payloads:
+  - "token of a user without the Sales & Territories role"
+expected: "403 for users outside the module role; never another tenant's record"
+legacy_reference: legacy/sales-territories/si_state.p
+automated_by: zap-baseline + custom request runner
