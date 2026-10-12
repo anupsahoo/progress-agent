@@ -1,0 +1,66 @@
+{
+  "Supplier": [
+    {
+      "SupplierIDNum": 1,
+      "Name": "GolfWorld Supplies",
+      "Address": "276 North Street",
+      "Address2": "-",
+      "City": "Boston",
+      "State": "MA",
+      "PostalCode": "02114",
+      "Country": "USA",
+      "Phone": "(617) 450-0087",
+      "Comments": "Ship all products 2nd Day Air.",
+      "Password": "demo",
+      "LoginDate": "1998-03-26",
+      "ShipAmount": 100,
+      "Discount": 47
+    },
+    {
+      "SupplierIDNum": 2,
+      "Name": "Pool Swimming Supplies",
+      "Address": "Rattipolku 3",
+      "Address2": "-",
+      "City": "Valkeala",
+      "State": "Uusimaa",
+      "PostalCode": "45360",
+      "Country": "Finland",
+      "Phone": "(60) 532 5471",
+      "Comments": "Ship all products 2nd Day Air.",
+      "Password": "demo",
+      "LoginDate": "1998-03-30",
+      "ShipAmount": 100,
+      "Discount": 1
+    },
+    {
+      "SupplierIDNum": 3,
+      "Name": "Nordic Ski Wholesale",
+      "Address": "Suite 415",
+      "Address2": "40 Grove St.",
+      "City": "Hingham",
+      "State": "MA",
+      "PostalCode": "02111",
+      "Country": "USA",
+      "Phone": "(617) 366-1557",
+      "Comments": "Ship all products 2nd Day Air.",
+      "Password": "demo",
+      "LoginDate": "1998-03-12",
+      "ShipAmount": 100,
+      "Discount": 20
+    }
+  ],
+  "SupplierItemXref": [
+    {
+      "SupplierIDNum": 0,
+      "Itemnum": 0
+    },
+    {
+      "SupplierIDNum": 1,
+      "Itemnum": 3
+    },
+    {
+      "SupplierIDNum": 1,
+      "Itemnum": 45
+    }
+  ]
+}
