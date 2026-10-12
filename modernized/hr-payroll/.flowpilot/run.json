@@ -1,0 +1,9 @@
+{
+  "run_id": "emv5d5jqn",
+  "module": "hr-payroll",
+  "wave": 4,
+  "legacy_programs": 95,
+  "legacy_lines": 7815,
+  "generated_by": "FlowPilot AI-DLC (CogenSight)",
+  "human_gate": "A person reviews and merges this pull request in GitHub."
+}
