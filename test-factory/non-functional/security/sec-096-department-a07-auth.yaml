@@ -1,0 +1,18 @@
+# sec-096-department-a07-auth: Department: A07 Missing authentication
+id: sec-096-department-a07-auth
+title: "Department: A07 Missing authentication"
+module: hr-payroll
+table: Department
+owasp: "A07:2021 Identification and Authentication Failures"
+cwe: CWE-306
+severity: medium
+target:
+  method: GET
+  path: "/api/hr-payroll/departments"
+payloads:
+  - "no Authorization header"
+  - "expired token"
+  - "token signed with another key"
+expected: "401 for every payload"
+legacy_reference: legacy/hr-payroll/si_department.p
+automated_by: zap-baseline + custom request runner

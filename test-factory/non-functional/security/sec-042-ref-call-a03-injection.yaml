@@ -1,0 +1,19 @@
+# sec-042-ref-call-a03-injection: RefCall: A03 Injection in search
+id: sec-042-ref-call-a03-injection
+title: "RefCall: A03 Injection in search"
+module: credit-management
+table: RefCall
+owasp: "A03:2021 Injection"
+cwe: CWE-89
+severity: high
+target:
+  method: GET
+  path: "/api/credit-management/ref-calls?q="
+payloads:
+  - "' OR '1'='1"
+  - "\"; DROP TABLE RefCall; --"
+  - "${jndi:ldap://x}"
+  - "<script>alert(1)</script>"
+expected: "200 with an empty or filtered page; CallNum search is parameterised; no stack trace"
+legacy_reference: legacy/credit-management/si_ref_call.p
+automated_by: zap-baseline + custom request runner

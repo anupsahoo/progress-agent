@@ -1,0 +1,16 @@
+# sec-022-benefits-a01-idor: Benefits: A01 Broken access control (IDOR)
+id: sec-022-benefits-a01-idor
+title: "Benefits: A01 Broken access control (IDOR)"
+module: hr-payroll
+table: Benefits
+owasp: "A01:2021 Broken Access Control"
+cwe: CWE-639
+severity: high
+target:
+  method: GET
+  path: "/api/hr-payroll/benefitses/2"
+payloads:
+  - "token of a user without the HR & Payroll role"
+expected: "403 for users outside the module role; never another tenant's record"
+legacy_reference: legacy/hr-payroll/si_benefits.p
+automated_by: zap-baseline + custom request runner

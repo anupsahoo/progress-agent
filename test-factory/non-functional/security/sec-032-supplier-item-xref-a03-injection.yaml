@@ -1,0 +1,19 @@
+# sec-032-supplier-item-xref-a03-injection: SupplierItemXref: A03 Injection in search
+id: sec-032-supplier-item-xref-a03-injection
+title: "SupplierItemXref: A03 Injection in search"
+module: supplier-management
+table: SupplierItemXref
+owasp: "A03:2021 Injection"
+cwe: CWE-89
+severity: high
+target:
+  method: GET
+  path: "/api/supplier-management/supplier-item-xrefs?q="
+payloads:
+  - "' OR '1'='1"
+  - "\"; DROP TABLE SupplierItemXref; --"
+  - "${jndi:ldap://x}"
+  - "<script>alert(1)</script>"
+expected: "200 with an empty or filtered page; SupplierIDNum search is parameterised; no stack trace"
+legacy_reference: legacy/supplier-management/si_supplier_item_xref.p
+automated_by: zap-baseline + custom request runner

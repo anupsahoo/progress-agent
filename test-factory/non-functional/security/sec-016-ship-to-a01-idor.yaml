@@ -1,0 +1,16 @@
+# sec-016-ship-to-a01-idor: ShipTo: A01 Broken access control (IDOR)
+id: sec-016-ship-to-a01-idor
+title: "ShipTo: A01 Broken access control (IDOR)"
+module: order-fulfilment
+table: ShipTo
+owasp: "A01:2021 Broken Access Control"
+cwe: CWE-639
+severity: high
+target:
+  method: GET
+  path: "/api/order-fulfilment/ship-tos/5/1"
+payloads:
+  - "token of a user without the Order Fulfilment role"
+expected: "403 for users outside the module role; never another tenant's record"
+legacy_reference: legacy/order-fulfilment/si_ship_to.p
+automated_by: zap-baseline + custom request runner

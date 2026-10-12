@@ -1,0 +1,16 @@
+# sec-002-feedback-a01-idor: Feedback: A01 Broken access control (IDOR)
+id: sec-002-feedback-a01-idor
+title: "Feedback: A01 Broken access control (IDOR)"
+module: customer-management
+table: Feedback
+owasp: "A01:2021 Broken Access Control"
+cwe: CWE-639
+severity: high
+target:
+  method: GET
+  path: "/api/customer-management/feedbacks/"
+payloads:
+  - "token of a user without the Customer Management role"
+expected: "403 for users outside the module role; never another tenant's record"
+legacy_reference: legacy/customer-management/si_feedback.p
+automated_by: zap-baseline + custom request runner

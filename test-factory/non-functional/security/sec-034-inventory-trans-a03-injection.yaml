@@ -1,0 +1,19 @@
+# sec-034-inventory-trans-a03-injection: InventoryTrans: A03 Injection in search
+id: sec-034-inventory-trans-a03-injection
+title: "InventoryTrans: A03 Injection in search"
+module: inventory
+table: InventoryTrans
+owasp: "A03:2021 Injection"
+cwe: CWE-89
+severity: high
+target:
+  method: GET
+  path: "/api/inventory/inventory-transes?q="
+payloads:
+  - "' OR '1'='1"
+  - "\"; DROP TABLE InventoryTrans; --"
+  - "${jndi:ldap://x}"
+  - "<script>alert(1)</script>"
+expected: "200 with an empty or filtered page; InvType search is parameterised; no stack trace"
+legacy_reference: legacy/inventory/si_inventory_trans.p
+automated_by: zap-baseline + custom request runner

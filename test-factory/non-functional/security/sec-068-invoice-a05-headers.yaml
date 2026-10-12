@@ -1,0 +1,16 @@
+# sec-068-invoice-a05-headers: Invoice: A05 Security misconfiguration
+id: sec-068-invoice-a05-headers
+title: "Invoice: A05 Security misconfiguration"
+module: billing-invoicing
+table: Invoice
+owasp: "A05:2021 Security Misconfiguration"
+cwe: CWE-16
+severity: medium
+target:
+  method: GET
+  path: "/api/billing-invoicing/invoices"
+payloads:
+  []
+expected: "X-Content-Type-Options nosniff, no Server version banner, CORS limited to the app origin"
+legacy_reference: legacy/billing-invoicing/si_invoice.p
+automated_by: zap-baseline + custom request runner

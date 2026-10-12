@@ -1,0 +1,16 @@
+# sec-067-ref-call-a05-headers: RefCall: A05 Security misconfiguration
+id: sec-067-ref-call-a05-headers
+title: "RefCall: A05 Security misconfiguration"
+module: credit-management
+table: RefCall
+owasp: "A05:2021 Security Misconfiguration"
+cwe: CWE-16
+severity: medium
+target:
+  method: GET
+  path: "/api/credit-management/ref-calls"
+payloads:
+  []
+expected: "X-Content-Type-Options nosniff, no Server version banner, CORS limited to the app origin"
+legacy_reference: legacy/credit-management/si_ref_call.p
+automated_by: zap-baseline + custom request runner

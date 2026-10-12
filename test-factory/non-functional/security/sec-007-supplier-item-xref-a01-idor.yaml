@@ -1,0 +1,16 @@
+# sec-007-supplier-item-xref-a01-idor: SupplierItemXref: A01 Broken access control (IDOR)
+id: sec-007-supplier-item-xref-a01-idor
+title: "SupplierItemXref: A01 Broken access control (IDOR)"
+module: supplier-management
+table: SupplierItemXref
+owasp: "A01:2021 Broken Access Control"
+cwe: CWE-639
+severity: high
+target:
+  method: GET
+  path: "/api/supplier-management/supplier-item-xrefs/0/0"
+payloads:
+  - "token of a user without the Supplier Management role"
+expected: "403 for users outside the module role; never another tenant's record"
+legacy_reference: legacy/supplier-management/si_supplier_item_xref.p
+automated_by: zap-baseline + custom request runner

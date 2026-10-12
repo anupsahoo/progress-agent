@@ -1,0 +1,16 @@
+# sec-063-po-line-a05-headers: POLine: A05 Security misconfiguration
+id: sec-063-po-line-a05-headers
+title: "POLine: A05 Security misconfiguration"
+module: purchasing
+table: POLine
+owasp: "A05:2021 Security Misconfiguration"
+cwe: CWE-16
+severity: medium
+target:
+  method: GET
+  path: "/api/purchasing/po-lines"
+payloads:
+  []
+expected: "X-Content-Type-Options nosniff, no Server version banner, CORS limited to the app origin"
+legacy_reference: legacy/purchasing/si_po_line.p
+automated_by: zap-baseline + custom request runner

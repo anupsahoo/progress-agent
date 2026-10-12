@@ -1,0 +1,19 @@
+# sec-038-po-line-a03-injection: POLine: A03 Injection in search
+id: sec-038-po-line-a03-injection
+title: "POLine: A03 Injection in search"
+module: purchasing
+table: POLine
+owasp: "A03:2021 Injection"
+cwe: CWE-89
+severity: high
+target:
+  method: GET
+  path: "/api/purchasing/po-lines?q="
+payloads:
+  - "' OR '1'='1"
+  - "\"; DROP TABLE POLine; --"
+  - "${jndi:ldap://x}"
+  - "<script>alert(1)</script>"
+expected: "200 with an empty or filtered page; POLineStatus search is parameterised; no stack trace"
+legacy_reference: legacy/purchasing/si_po_line.p
+automated_by: zap-baseline + custom request runner

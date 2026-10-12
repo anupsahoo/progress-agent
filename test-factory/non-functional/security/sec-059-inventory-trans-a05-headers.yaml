@@ -1,0 +1,16 @@
+# sec-059-inventory-trans-a05-headers: InventoryTrans: A05 Security misconfiguration
+id: sec-059-inventory-trans-a05-headers
+title: "InventoryTrans: A05 Security misconfiguration"
+module: inventory
+table: InventoryTrans
+owasp: "A05:2021 Security Misconfiguration"
+cwe: CWE-16
+severity: medium
+target:
+  method: GET
+  path: "/api/inventory/inventory-transes"
+payloads:
+  []
+expected: "X-Content-Type-Options nosniff, no Server version banner, CORS limited to the app origin"
+legacy_reference: legacy/inventory/si_inventory_trans.p
+automated_by: zap-baseline + custom request runner
