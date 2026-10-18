@@ -1,0 +1,103 @@
+[
+  {
+    "name": "lookup existing #1",
+    "op": "GET",
+    "custNum": 1,
+    "change": null,
+    "legacy_output": "FOUND Lift Tours"
+  },
+  {
+    "name": "lookup existing #3",
+    "op": "GET",
+    "custNum": 3,
+    "change": null,
+    "legacy_output": "FOUND Hoops"
+  },
+  {
+    "name": "lookup unknown",
+    "op": "GET",
+    "custNum": 99999,
+    "change": null,
+    "legacy_output": "Customer not found."
+  },
+  {
+    "name": "lookup zero",
+    "op": "GET",
+    "custNum": 0,
+    "change": null,
+    "legacy_output": "Customer not found."
+  },
+  {
+    "name": "update city",
+    "op": "PUT",
+    "custNum": 3,
+    "change": {
+      "city": "Boston"
+    },
+    "legacy_output": "Record updated successfully."
+  },
+  {
+    "name": "update phone",
+    "op": "PUT",
+    "custNum": 1,
+    "change": {
+      "phone": "(617) 450-0099"
+    },
+    "legacy_output": "Record updated successfully."
+  },
+  {
+    "name": "update unknown",
+    "op": "PUT",
+    "custNum": 424242,
+    "change": {
+      "city": "X"
+    },
+    "legacy_output": "Customer not found."
+  },
+  {
+    "name": "update all fields",
+    "op": "PUT",
+    "custNum": 3,
+    "change": {
+      "name": "Hoops Inc",
+      "address": "1 Main",
+      "city": "Atlanta",
+      "state": "GA",
+      "postalCode": "30301",
+      "phone": "(404) 555-0100"
+    },
+    "legacy_output": "Record updated successfully."
+  },
+  {
+    "name": "blank address allowed",
+    "op": "PUT",
+    "custNum": 1,
+    "change": {
+      "address": ""
+    },
+    "legacy_output": "Record updated successfully."
+  },
+  {
+    "name": "state not validated (legacy)",
+    "op": "PUT",
+    "custNum": 1,
+    "change": {
+      "state": "ZZ"
+    },
+    "legacy_output": "Record updated successfully."
+  },
+  {
+    "name": "re-lookup after update",
+    "op": "GET",
+    "custNum": 3,
+    "change": null,
+    "legacy_output": "FOUND Hoops Inc"
+  },
+  {
+    "name": "repeat lookup loop",
+    "op": "GET",
+    "custNum": 1,
+    "change": null,
+    "legacy_output": "FOUND Lift Tours"
+  }
+]
