@@ -1,0 +1,16 @@
+# sec-054-state-a05-headers: State: A05 Security misconfiguration
+id: sec-054-state-a05-headers
+title: "State: A05 Security misconfiguration"
+module: sales-territories
+table: State
+owasp: "A05:2021 Security Misconfiguration"
+cwe: CWE-16
+severity: medium
+target:
+  method: GET
+  path: "/api/sales-territories/states"
+payloads:
+  []
+expected: "X-Content-Type-Options nosniff, no Server version banner, CORS limited to the app origin"
+legacy_reference: legacy/sales-territories/si_state.p
+automated_by: zap-baseline + custom request runner

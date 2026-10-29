@@ -1,0 +1,16 @@
+# sec-062-purchase-order-a05-headers: PurchaseOrder: A05 Security misconfiguration
+id: sec-062-purchase-order-a05-headers
+title: "PurchaseOrder: A05 Security misconfiguration"
+module: purchasing
+table: PurchaseOrder
+owasp: "A05:2021 Security Misconfiguration"
+cwe: CWE-16
+severity: medium
+target:
+  method: GET
+  path: "/api/purchasing/purchase-orders"
+payloads:
+  []
+expected: "X-Content-Type-Options nosniff, no Server version banner, CORS limited to the app origin"
+legacy_reference: legacy/purchasing/si_purchase_order.p
+automated_by: zap-baseline + custom request runner
