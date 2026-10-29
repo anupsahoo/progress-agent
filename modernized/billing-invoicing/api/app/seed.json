@@ -1,0 +1,60 @@
+{
+  "Invoice": [
+    {
+      "Invoicenum": 1,
+      "CustNum": 53,
+      "InvoiceDate": "1998-01-27",
+      "Amount": 4402.02,
+      "TotalPaid": 5062.32,
+      "Adjustment": 0,
+      "OrderNum": 1,
+      "ShipCharge": 660.3
+    },
+    {
+      "Invoicenum": 2,
+      "CustNum": 81,
+      "InvoiceDate": "1997-10-06",
+      "Amount": 2812.98,
+      "TotalPaid": 2812.98,
+      "Adjustment": 0,
+      "OrderNum": 2,
+      "ShipCharge": 0
+    },
+    {
+      "Invoicenum": 3,
+      "CustNum": 66,
+      "InvoiceDate": "1997-09-24",
+      "Amount": 23504.59,
+      "TotalPaid": 23504.59,
+      "Adjustment": 0,
+      "OrderNum": 3,
+      "ShipCharge": 0
+    }
+  ],
+  "BillTo": [
+    {
+      "CustNum": 5,
+      "BillToID": 1,
+      "Name": "AL - Finance Offc",
+      "Address": "7876 Alabama St",
+      "Address2": "Suite 250",
+      "City": "Montgomery",
+      "State": "AL",
+      "PostalCode": "36117",
+      "Contact": "Bubba Jones",
+      "Phone": "(334) 123-1234"
+    },
+    {
+      "CustNum": 5,
+      "BillToID": 2,
+      "Name": "GA - Finance Offc.",
+      "Address": "987 Peachtree St.",
+      "Address2": "Suite 1100",
+      "City": "Atanta",
+      "State": "GA",
+      "PostalCode": "30123",
+      "Contact": "Sally Horn",
+      "Phone": "(770) 432-4321"
+    }
+  ]
+}
