@@ -1,0 +1,60 @@
+{
+  "Warehouse": [
+    {
+      "WarehouseNum": 1,
+      "WarehouseName": "Northeast  USA",
+      "Country": "USA",
+      "Address": "27 Oak Park",
+      "Address2": "",
+      "City": "Bedford",
+      "State": "MA",
+      "PostalCode": "01730",
+      "Phone": "(781) 333-4567"
+    },
+    {
+      "WarehouseNum": 2,
+      "WarehouseName": "Southeast USA",
+      "Country": "USA",
+      "Address": "4567 Peach Rd",
+      "Address2": "",
+      "City": "Norcross",
+      "State": "GA",
+      "PostalCode": "30071",
+      "Phone": "(770) 416-1020"
+    },
+    {
+      "WarehouseNum": 3,
+      "WarehouseName": "Central USA",
+      "Country": "USA",
+      "Address": "35363 York Rd",
+      "Address2": "",
+      "City": "Oak Brook",
+      "State": "IL",
+      "PostalCode": "60523",
+      "Phone": "(630) 990-9876"
+    }
+  ],
+  "Bin": [
+    {
+      "WarehouseNum": 1,
+      "Itemnum": 1,
+      "Qty": 9304,
+      "BinNum": 716,
+      "BinName": "452917-D"
+    },
+    {
+      "WarehouseNum": 1,
+      "Itemnum": 2,
+      "Qty": 9273,
+      "BinNum": 717,
+      "BinName": "691289-Q"
+    },
+    {
+      "WarehouseNum": 1,
+      "Itemnum": 3,
+      "Qty": 9235,
+      "BinNum": 718,
+      "BinName": "597377-A"
+    }
+  ]
+}
