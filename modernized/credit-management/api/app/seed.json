@@ -1,0 +1,28 @@
+{
+  "RefCall": [
+    {
+      "CallNum": "000001",
+      "CustNum": 2,
+      "CallDate": "1998-01-05",
+      "SalesRep": "DKP",
+      "Parent": "",
+      "Txt": "Ordered frisbees. We sent Ultimate style, they want Guts. Guts are on backorder, I told them they would receive them by May."
+    },
+    {
+      "CallNum": "000002",
+      "CustNum": 21,
+      "CallDate": "1998-01-21",
+      "SalesRep": "HXM",
+      "Parent": "",
+      "Txt": "Order of sweat bands were wrong color, and cycle helmets were all a size larger than ordered. They are very upset and threaten to pull their account. I told them I would straighten the situation out and make sure they were happy."
+    },
+    {
+      "CallNum": "000003",
+      "CustNum": 56,
+      "CallDate": "1998-01-01",
+      "SalesRep": "DKP",
+      "Parent": "",
+      "Txt": "Want us to drop ship for their customers so they don't have to keep such a large inventory. I told them I would discuss it with management and let them know."
+    }
+  ]
+}
