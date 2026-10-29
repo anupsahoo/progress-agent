@@ -1,0 +1,16 @@
+# sec-052-feedback-a05-headers: Feedback: A05 Security misconfiguration
+id: sec-052-feedback-a05-headers
+title: "Feedback: A05 Security misconfiguration"
+module: customer-management
+table: Feedback
+owasp: "A05:2021 Security Misconfiguration"
+cwe: CWE-16
+severity: medium
+target:
+  method: GET
+  path: "/api/customer-management/feedbacks"
+payloads:
+  []
+expected: "X-Content-Type-Options nosniff, no Server version banner, CORS limited to the app origin"
+legacy_reference: legacy/customer-management/si_feedback.p
+automated_by: zap-baseline + custom request runner

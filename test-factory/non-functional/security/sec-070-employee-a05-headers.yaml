@@ -1,0 +1,16 @@
+# sec-070-employee-a05-headers: Employee: A05 Security misconfiguration
+id: sec-070-employee-a05-headers
+title: "Employee: A05 Security misconfiguration"
+module: hr-payroll
+table: Employee
+owasp: "A05:2021 Security Misconfiguration"
+cwe: CWE-16
+severity: medium
+target:
+  method: GET
+  path: "/api/hr-payroll/employees"
+payloads:
+  []
+expected: "X-Content-Type-Options nosniff, no Server version banner, CORS limited to the app origin"
+legacy_reference: legacy/hr-payroll/si_employee.p
+automated_by: zap-baseline + custom request runner

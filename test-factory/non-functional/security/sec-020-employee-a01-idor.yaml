@@ -1,0 +1,16 @@
+# sec-020-employee-a01-idor: Employee: A01 Broken access control (IDOR)
+id: sec-020-employee-a01-idor
+title: "Employee: A01 Broken access control (IDOR)"
+module: hr-payroll
+table: Employee
+owasp: "A01:2021 Broken Access Control"
+cwe: CWE-639
+severity: high
+target:
+  method: GET
+  path: "/api/hr-payroll/employees/1"
+payloads:
+  - "token of a user without the HR & Payroll role"
+expected: "403 for users outside the module role; never another tenant's record"
+legacy_reference: legacy/hr-payroll/si_employee.p
+automated_by: zap-baseline + custom request runner

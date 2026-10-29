@@ -1,0 +1,19 @@
+# sec-041-ship-to-a03-injection: ShipTo: A03 Injection in search
+id: sec-041-ship-to-a03-injection
+title: "ShipTo: A03 Injection in search"
+module: order-fulfilment
+table: ShipTo
+owasp: "A03:2021 Injection"
+cwe: CWE-89
+severity: high
+target:
+  method: GET
+  path: "/api/order-fulfilment/ship-tos?q="
+payloads:
+  - "' OR '1'='1"
+  - "\"; DROP TABLE ShipTo; --"
+  - "${jndi:ldap://x}"
+  - "<script>alert(1)</script>"
+expected: "200 with an empty or filtered page; Contact search is parameterised; no stack trace"
+legacy_reference: legacy/order-fulfilment/si_ship_to.p
+automated_by: zap-baseline + custom request runner

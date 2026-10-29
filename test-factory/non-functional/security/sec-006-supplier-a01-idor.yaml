@@ -1,0 +1,16 @@
+# sec-006-supplier-a01-idor: Supplier: A01 Broken access control (IDOR)
+id: sec-006-supplier-a01-idor
+title: "Supplier: A01 Broken access control (IDOR)"
+module: supplier-management
+table: Supplier
+owasp: "A01:2021 Broken Access Control"
+cwe: CWE-639
+severity: high
+target:
+  method: GET
+  path: "/api/supplier-management/suppliers/1"
+payloads:
+  - "token of a user without the Supplier Management role"
+expected: "403 for users outside the module role; never another tenant's record"
+legacy_reference: legacy/supplier-management/si_supplier.p
+automated_by: zap-baseline + custom request runner

@@ -1,0 +1,16 @@
+# sec-053-salesrep-a05-headers: Salesrep: A05 Security misconfiguration
+id: sec-053-salesrep-a05-headers
+title: "Salesrep: A05 Security misconfiguration"
+module: sales-territories
+table: Salesrep
+owasp: "A05:2021 Security Misconfiguration"
+cwe: CWE-16
+severity: medium
+target:
+  method: GET
+  path: "/api/sales-territories/salesreps"
+payloads:
+  []
+expected: "X-Content-Type-Options nosniff, no Server version banner, CORS limited to the app origin"
+legacy_reference: legacy/sales-territories/si_salesrep.p
+automated_by: zap-baseline + custom request runner

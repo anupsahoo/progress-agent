@@ -1,0 +1,19 @@
+# sec-040-order-line-a03-injection: OrderLine: A03 Injection in search
+id: sec-040-order-line-a03-injection
+title: "OrderLine: A03 Injection in search"
+module: order-entry
+table: OrderLine
+owasp: "A03:2021 Injection"
+cwe: CWE-89
+severity: high
+target:
+  method: GET
+  path: "/api/order-entry/order-lines?q="
+payloads:
+  - "' OR '1'='1"
+  - "\"; DROP TABLE OrderLine; --"
+  - "${jndi:ldap://x}"
+  - "<script>alert(1)</script>"
+expected: "200 with an empty or filtered page; OrderLineStatus search is parameterised; no stack trace"
+legacy_reference: legacy/order-entry/si_order_line.p
+automated_by: zap-baseline + custom request runner
